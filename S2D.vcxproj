@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{18b4bdf1-829a-44ad-a84d-4c928bace1cc}</ProjectGuid>
+    <RootNamespace>S2D</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="headers\S2D.h" />
+    <ClInclude Include="headers\S2Ddefines.h" />
+    <ClInclude Include="headers\SFML\Audio.hpp" />
+    <ClInclude Include="headers\SFML\Audio\AlResource.hpp" />
+    <ClInclude Include="headers\SFML\Audio\Export.hpp" />
+    <ClInclude Include="headers\SFML\Audio\InputSoundFile.hpp" />
+    <ClInclude Include="headers\SFML\Audio\Listener.hpp" />
+    <ClInclude Include="headers\SFML\Audio\Music.hpp" />
+    <ClInclude Include="headers\SFML\Audio\OutputSoundFile.hpp" />
+    <ClInclude Include="headers\SFML\Audio\Sound.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundBuffer.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundBufferRecorder.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundFileFactory.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundFileReader.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundFileWriter.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundRecorder.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundSource.hpp" />
+    <ClInclude Include="headers\SFML\Audio\SoundStream.hpp" />
+    <ClInclude Include="headers\SFML\Config.hpp" />
+    <ClInclude Include="headers\SFML\GpuPreference.hpp" />
+    <ClInclude Include="headers\SFML\Graphics.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\BlendMode.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\CircleShape.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Color.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\ConvexShape.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Drawable.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Export.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Font.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Glsl.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Glyph.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Image.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\PrimitiveType.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Rect.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\RectangleShape.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\RenderStates.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\RenderTarget.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\RenderTexture.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\RenderWindow.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Shader.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Shape.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Sprite.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Text.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Texture.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Transform.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Transformable.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\Vertex.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\VertexArray.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\VertexBuffer.hpp" />
+    <ClInclude Include="headers\SFML\Graphics\View.hpp" />
+    <ClInclude Include="headers\SFML\Main.hpp" />
+    <ClInclude Include="headers\SFML\Network.hpp" />
+    <ClInclude Include="headers\SFML\Network\Export.hpp" />
+    <ClInclude Include="headers\SFML\Network\Ftp.hpp" />
+    <ClInclude Include="headers\SFML\Network\Http.hpp" />
+    <ClInclude Include="headers\SFML\Network\IpAddress.hpp" />
+    <ClInclude Include="headers\SFML\Network\Packet.hpp" />
+    <ClInclude Include="headers\SFML\Network\Socket.hpp" />
+    <ClInclude Include="headers\SFML\Network\SocketHandle.hpp" />
+    <ClInclude Include="headers\SFML\Network\SocketSelector.hpp" />
+    <ClInclude Include="headers\SFML\Network\TcpListener.hpp" />
+    <ClInclude Include="headers\SFML\Network\TcpSocket.hpp" />
+    <ClInclude Include="headers\SFML\Network\UdpSocket.hpp" />
+    <ClInclude Include="headers\SFML\OpenGL.hpp" />
+    <ClInclude Include="headers\SFML\System.hpp" />
+    <ClInclude Include="headers\SFML\System\Clock.hpp" />
+    <ClInclude Include="headers\SFML\System\Err.hpp" />
+    <ClInclude Include="headers\SFML\System\Export.hpp" />
+    <ClInclude Include="headers\SFML\System\FileInputStream.hpp" />
+    <ClInclude Include="headers\SFML\System\InputStream.hpp" />
+    <ClInclude Include="headers\SFML\System\Lock.hpp" />
+    <ClInclude Include="headers\SFML\System\MemoryInputStream.hpp" />
+    <ClInclude Include="headers\SFML\System\Mutex.hpp" />
+    <ClInclude Include="headers\SFML\System\NativeActivity.hpp" />
+    <ClInclude Include="headers\SFML\System\NonCopyable.hpp" />
+    <ClInclude Include="headers\SFML\System\Sleep.hpp" />
+    <ClInclude Include="headers\SFML\System\String.hpp" />
+    <ClInclude Include="headers\SFML\System\Thread.hpp" />
+    <ClInclude Include="headers\SFML\System\ThreadLocal.hpp" />
+    <ClInclude Include="headers\SFML\System\ThreadLocalPtr.hpp" />
+    <ClInclude Include="headers\SFML\System\Time.hpp" />
+    <ClInclude Include="headers\SFML\System\Utf.hpp" />
+    <ClInclude Include="headers\SFML\System\Vector2.hpp" />
+    <ClInclude Include="headers\SFML\System\Vector3.hpp" />
+    <ClInclude Include="headers\SFML\Window.hpp" />
+    <ClInclude Include="headers\SFML\Window\Clipboard.hpp" />
+    <ClInclude Include="headers\SFML\Window\Context.hpp" />
+    <ClInclude Include="headers\SFML\Window\ContextSettings.hpp" />
+    <ClInclude Include="headers\SFML\Window\Cursor.hpp" />
+    <ClInclude Include="headers\SFML\Window\Event.hpp" />
+    <ClInclude Include="headers\SFML\Window\Export.hpp" />
+    <ClInclude Include="headers\SFML\Window\GlResource.hpp" />
+    <ClInclude Include="headers\SFML\Window\Joystick.hpp" />
+    <ClInclude Include="headers\SFML\Window\Keyboard.hpp" />
+    <ClInclude Include="headers\SFML\Window\Mouse.hpp" />
+    <ClInclude Include="headers\SFML\Window\Sensor.hpp" />
+    <ClInclude Include="headers\SFML\Window\Touch.hpp" />
+    <ClInclude Include="headers\SFML\Window\VideoMode.hpp" />
+    <ClInclude Include="headers\SFML\Window\Window.hpp" />
+    <ClInclude Include="headers\SFML\Window\WindowHandle.hpp" />
+    <ClInclude Include="headers\SFML\Window\WindowStyle.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="headers\SFML\Audio\SoundFileFactory.inl" />
+    <None Include="headers\SFML\Graphics\Glsl.inl" />
+    <None Include="headers\SFML\Graphics\Rect.inl" />
+    <None Include="headers\SFML\System\String.inl" />
+    <None Include="headers\SFML\System\Thread.inl" />
+    <None Include="headers\SFML\System\ThreadLocalPtr.inl" />
+    <None Include="headers\SFML\System\Utf.inl" />
+    <None Include="headers\SFML\System\Vector2.inl" />
+    <None Include="headers\SFML\System\Vector3.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
