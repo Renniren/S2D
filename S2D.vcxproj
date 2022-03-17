@@ -93,7 +93,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -113,7 +113,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>

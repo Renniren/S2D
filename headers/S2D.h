@@ -1,8 +1,12 @@
 #ifndef S2D_MAIN_HEADER
 #define S2D_MAIN_HEADER
+
 #include <string>
 #include <vector>
+#include <stdlib.h>
+#include <iostream>
 #include <SFML/Graphics.hpp>
+
 using namespace sf;
 using namespace std;
 
@@ -16,7 +20,8 @@ using namespace std;
 #ifndef S2D_SETTINGS
 #define S2D_SETTINGS
 
-string game_name = "S2D Game - ";
+string game_name = "S2D Game";
+string game_debug_name = "S2D Test Game (Debug): ";
 
 #endif
 
@@ -45,15 +50,11 @@ public:
 #endif
 
 RenderWindow* GAME_WINDOW;
+sf::Event event;
+
 bool doClear = true;
-class S2D_event_handler
-{
-public:
-	__event void game_tick();
 
-};
-
-S2D_event_handler* evh;
+enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways, SimulateAlwaysDontDraw };
 
 class world
 {
@@ -61,8 +62,6 @@ public:
 	string name;
 	Color clear_color;
 };
-
-enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways, SimulateAlwaysDontDraw };
 
 class level
 {
@@ -77,11 +76,29 @@ public:
 	}
 };
 
-world default_world = { "No World", Color::Black };
+world default_world = { "World", Color::Black };
 world current_world = default_world;
 
-level* default_level = new level(string("No Level"), default_world);
-level* current_level = default_level;;
+level* default_level = new level(string("Default Level"), default_world);
+level* current_level = default_level;
+
+//keeps record of every loaded texture, and their accompanying sprite to keep textures alive
+vector<pair<Texture*, Sprite*>> textures;
+void create_texture_pair(Texture* tex, Sprite* spr)
+{
+	textures.push_back(pair<Texture*, Sprite*>(tex, spr));
+}
+
+Sprite create_sprite(string texturepath)
+{
+	Texture* texture = new Texture();
+	Sprite* ret;
+	if (!texture->loadFromFile(texturepath)) return Sprite();
+	ret = new Sprite(*texture);
+	create_texture_pair(texture, ret);
+	ret->setOrigin(0.25f, 0.25f);
+	return *ret;
+}
 
 class world_object
 {
@@ -90,7 +107,7 @@ public:
 	Vector2f position, scale;
 	level* parent_level;
 	Sprite sprite;
-	simulate_flags flags = simulate_flags::SimulateAlways;
+	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
 	string name;
 	float rotation;
 
@@ -114,7 +131,7 @@ public:
 			break;
 
 		case SimulateAlwaysDontDraw:
-
+			update();
 			break;
 
 		case SimulateOnlyWhenLevelActive:
@@ -134,16 +151,22 @@ public:
 		rotation = 0;
 		position = Vector2f(0, 0);
 		name = "new WorldObject";
-		
-		printf("\nd");
 	}
-
 };
 
 class player : public world_object, public object
 {
 public:
 	float speed = 0.9f;
+
+	player()
+	{
+		init_behavior;
+
+		scale = Vector2f(0.03, 0.03);
+		sprite = create_sprite("sprites\\circle.png");
+	}
+
 	void update()
 	{
 		if (Keyboard::isKeyPressed(Keyboard::W))
@@ -164,13 +187,6 @@ public:
 		{
 			position.x += speed;
 		}
-
-
-	}
-
-	player()
-	{
-		init_behavior;
 	}
 };
 
@@ -183,7 +199,6 @@ class camera : public world_object
 		init_behavior;
 	}
 };
-
 
 void set_current_level(level* destination)
 {
@@ -201,24 +216,14 @@ void set_current_level(level* destination)
 	}
 }
 
-//keeps record of every loaded texture, and their accompanying sprite to keep textures alive
-vector<pair<Texture*, Sprite*>> textures;
-void create_texture_pair(Texture* tex, Sprite* spr)
-{
-	textures.push_back(pair<Texture*, Sprite*>(tex, spr));
-}
-
-Sprite* create_sprite(string texturepath)
-{
-	Texture* texture = new Texture();
-	Sprite* ret;
-	if(!texture->loadFromFile(texturepath)) return nullptr;
-	ret = new Sprite(*texture);
-	create_texture_pair(texture, ret);
-	ret->setOrigin(0.25f, 0.25f);
-	return ret;
-}
-
 vector<world_object*> world_object::active_objects = vector<world_object*>();
+
+void update_active_objects()
+{
+	for (size_t i = 0; i < world_object::active_objects.size(); i++)
+	{
+		world_object::active_objects[i]->tick();
+	}
+}
 
 #endif
