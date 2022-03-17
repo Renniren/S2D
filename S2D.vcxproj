@@ -88,13 +88,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SFML_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SFML_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

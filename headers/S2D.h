@@ -23,39 +23,24 @@ string game_name = "S2D Game - ";
 #ifndef S2D_EVENTS
 #define S2D_EVENTS
 
-template <typename type>
-class Event
+class object
 {
-	type returnType;
-	type fn;
-	vector<type> events;
 public:
-	Event(void* func)
-	{
-		type (*function)(type){ func };
-		fn = function;
-	}
+	int instance_id;
 
-	Event(vector<void*> events)
+	virtual string to_string()
 	{
-		for (int i = 0; i < events.size(); int i++)
-		{
-			type(*function)(type) { events[i] };
-			this->events.push_back(function);
-		}
-	}
 
-	void Subscribe(void* method)
-	{
-		type(*function)(type) { method };
-		events.push_back(function);
-	}
-
-	void Invoke()
-	{
-		(*fn)();
+		return "";
 	}
 };
+
+#endif
+
+#ifndef S2D_MACROS
+#define S2D_MACROS
+
+#define init_behavior active_objects.push_back(&(*this))
 
 #endif
 
@@ -84,17 +69,28 @@ class level
 public:
 	string name;
 	world world_settings;
+
+	level(string name, world settings)
+	{
+		this->name = name;
+		this->world_settings = settings;
+	}
 };
 
-level* current_level;
+world default_world = { "No World", Color::Black };
+world current_world = default_world;
+
+level* default_level = new level(string("No Level"), default_world);
+level* current_level = default_level;;
 
 class world_object
 {
 public:
+	static vector<world_object*> active_objects;
 	Vector2f position, scale;
 	level* parent_level;
 	Sprite sprite;
-	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
+	simulate_flags flags = simulate_flags::SimulateAlways;
 	string name;
 	float rotation;
 
@@ -103,16 +99,18 @@ public:
 
 	}
 
+	virtual void update(){}
+
 	void tick()
 	{
-		printf("t");
-		switch (flags)
+		switch (this->flags)
 		{
 		case SimulateAlways:
-			sprite.setPosition(position);
-			sprite.setRotation(rotation);
-			sprite.setScale(scale);
-			GAME_WINDOW->draw(sprite);
+				sprite.setPosition(position);
+				sprite.setRotation(rotation);
+				sprite.setScale(scale);
+				GAME_WINDOW->draw(sprite);
+				update();
 			break;
 
 		case SimulateAlwaysDontDraw:
@@ -120,11 +118,12 @@ public:
 			break;
 
 		case SimulateOnlyWhenLevelActive:
-			if (parent_level != current_level) return;
+			if (parent_level->name != current_level->name) return;
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
 				GAME_WINDOW->draw(sprite);
+				update();
 			break;
 		}
 	}
@@ -135,22 +134,55 @@ public:
 		rotation = 0;
 		position = Vector2f(0, 0);
 		name = "new WorldObject";
-		//__hook(&S2D_event_handler::game_tick, evh, &world_object::tick);
+		
 		printf("\nd");
 	}
+
 };
 
-class player
+class player : public world_object, public object
 {
 public:
+	float speed = 0.9f;
 	void update()
 	{
-		printf("\ng");
+		if (Keyboard::isKeyPressed(Keyboard::W))
+		{
+			position.y -= speed;
+		}
+		if (Keyboard::isKeyPressed(Keyboard::S))
+		{
+			position.y += speed;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::A))
+		{
+			position.x -= speed;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::D))
+		{
+			position.x += speed;
+		}
+
+
+	}
+
+	player()
+	{
+		init_behavior;
 	}
 };
 
-world default_world = { "No World", Color::Black };
-world current_world = default_world;
+class camera : public world_object
+{
+	float zoom = 10;
+
+	camera()
+	{
+		init_behavior;
+	}
+};
 
 
 void set_current_level(level* destination)
@@ -187,5 +219,6 @@ Sprite* create_sprite(string texturepath)
 	return ret;
 }
 
+vector<world_object*> world_object::active_objects = vector<world_object*>();
 
 #endif
