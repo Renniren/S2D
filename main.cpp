@@ -13,12 +13,16 @@ int main()
 
     while(GAME_WINDOW->isOpen())
     {
-        #ifdef S2D_DEBUG
-                GAME_WINDOW->setTitle(game_debug_name + current_world.name);
-        #endif
-        #ifndef S2D_DEBUG
-                GAME_WINDOW->setTitle(game_name);
-        #endif
+    #ifdef S2D_DEBUG
+            GAME_WINDOW->setTitle(game_debug_name + current_world.name);
+    #endif
+    #ifndef S2D_DEBUG
+            GAME_WINDOW->setTitle(game_name);
+    #endif
+
+            float currentFrame = static_cast<float>(sf);
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
         
         if(doClear) GAME_WINDOW->clear(current_world.clear_color);
         

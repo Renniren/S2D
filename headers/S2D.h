@@ -56,6 +56,28 @@ bool doClear = true;
 
 enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways, SimulateAlwaysDontDraw };
 
+class time
+{
+	static Clock global_clock;
+	static Time _time;
+public:
+	static Int64 delta;
+
+	static void init()
+	{
+		global_clock = Clock();
+	}
+
+	static void update()
+	{
+		static Int64 last;
+		_time = global_clock.getElapsedTime();
+		static Int64 current = _time.asMilliseconds();
+		delta = current - last;
+		last = current;
+	}
+};
+
 class world
 {
 public:
