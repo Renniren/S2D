@@ -45,7 +45,7 @@ public:
 #ifndef S2D_MACROS
 #define S2D_MACROS
 
-#define init_behavior active_objects.push_back(&(*this))
+#define init_behavior ActiveObjects.push_back(&(*this))
 
 #endif
 
@@ -53,15 +53,47 @@ RenderWindow* GAME_WINDOW;
 sf::Event event;
 
 bool doClear = true;
-
 enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways, SimulateAlwaysDontDraw };
+
+void clamp(float& num, float lower, float upper)
+{
+	if (num < lower) num = lower;
+	if (num > upper) num = upper;
+}
+
+void clamp(int& num, int lower, int upper)
+{
+	if (num < lower) num = lower;
+	if (num > upper) num = upper;
+}
+
+bool isKeyPressedTap(sf::Keyboard::Key query)
+{
+	static bool res;
+	if (Keyboard::isKeyPressed(query))
+	{
+		if (!res)
+		{
+			res = true;
+			return true;
+		}
+	}
+	else
+	{
+		res = false;
+	}
+	return false;
+}
 
 class time
 {
 	static Clock global_clock;
 	static Time _time;
+	static Int64 last, current;
+
 public:
-	static Int64 delta;
+	static float delta, deltaUnscaled;
+	static float Scale;
 
 	static void init()
 	{
@@ -70,68 +102,85 @@ public:
 
 	static void update()
 	{
-		static Int64 last;
+		clamp(Scale, 0, 1);
+
 		_time = global_clock.getElapsedTime();
-		static Int64 current = _time.asMilliseconds();
+		current = _time.asMilliseconds();
 		delta = current - last;
+		deltaUnscaled = delta;
+
+		delta /= 10;
+		deltaUnscaled /= 10;
+
+		delta *= Scale;
 		last = current;
 	}
 };
 
-class world
+float time::delta = 0, time::deltaUnscaled = 0;
+Int64 time::current = 0, time::last = 0;
+Time time::_time = Time();
+Clock time::global_clock = Clock();
+
+float time::Scale = 1;
+
+class World
 {
 public:
 	string name;
 	Color clear_color;
 };
 
-class level
+class Level
 {
 public:
 	string name;
-	world world_settings;
+	World world_settings;
 
-	level(string name, world settings)
+	Level(string name, World settings)
 	{
 		this->name = name;
 		this->world_settings = settings;
 	}
 };
 
-world default_world = { "World", Color::Black };
-world current_world = default_world;
+World DefaultWorld = { "World", Color::Black };
+World ActiveWorld = DefaultWorld;
 
-level* default_level = new level(string("Default Level"), default_world);
-level* current_level = default_level;
+Level* DefaultLevel = new Level(string("Default Level"), DefaultWorld);
+Level* ActiveLevel = DefaultLevel;
+
 
 //keeps record of every loaded texture, and their accompanying sprite to keep textures alive
-vector<pair<Texture*, Sprite*>> textures;
-void create_texture_pair(Texture* tex, Sprite* spr)
+vector<pair<Texture*, Sprite*>> LoadedTextures;
+void CreateTexturePair(Texture* tex, Sprite* spr)
 {
-	textures.push_back(pair<Texture*, Sprite*>(tex, spr));
+	LoadedTextures.push_back(pair<Texture*, Sprite*>(tex, spr));
 }
 
-Sprite create_sprite(string texturepath)
+Sprite CreateSprite(string texturepath)
 {
 	Texture* texture = new Texture();
 	Sprite* ret;
 	if (!texture->loadFromFile(texturepath)) return Sprite();
 	ret = new Sprite(*texture);
-	create_texture_pair(texture, ret);
+	CreateTexturePair(texture, ret);
 	ret->setOrigin(0.25f, 0.25f);
 	return *ret;
 }
 
-class world_object
+class GameObject
 {
 public:
-	static vector<world_object*> active_objects;
+	static vector<GameObject*> ActiveObjects;
 	Vector2f position, scale;
-	level* parent_level;
+	Level* parent_level;
 	Sprite sprite;
 	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
 	string name;
 	float rotation;
+
+	bool active, draw = true;
 
 	void levelChanged()
 	{
@@ -142,33 +191,39 @@ public:
 
 	void tick()
 	{
+		if (!active) return;
 		switch (this->flags)
 		{
 		case SimulateAlways:
+			if (draw)
+			{
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
 				GAME_WINDOW->draw(sprite);
-				update();
-			break;
-
-		case SimulateAlwaysDontDraw:
+			}
+				
 			update();
 			break;
 
 		case SimulateOnlyWhenLevelActive:
-			if (parent_level->name != current_level->name) return;
+			if (parent_level->name != ActiveLevel->name) return;
+			if (draw)
+			{
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
 				GAME_WINDOW->draw(sprite);
-				update();
+			}
+
+			update();
 			break;
 		}
 	}
 
-	world_object()
+	GameObject(bool setActive)
 	{
+		active = setActive;
 		parent_level = nullptr;
 		rotation = 0;
 		position = Vector2f(0, 0);
@@ -176,75 +231,91 @@ public:
 	}
 };
 
-class player : public world_object, public object
+class TestPlayer : public GameObject, public object
 {
 public:
-	float speed = 0.9f;
+	float speed = 4.0f;
 
-	player()
+	TestPlayer() : GameObject(true)
 	{
 		init_behavior;
 
 		scale = Vector2f(0.03, 0.03);
-		sprite = create_sprite("sprites\\circle.png");
+		sprite = CreateSprite("sprites\\circle.png");
 	}
 
 	void update()
 	{
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
-			position.y -= speed;
+			position.y -= speed * time::delta;
 		}
 		if (Keyboard::isKeyPressed(Keyboard::S))
 		{
-			position.y += speed;
+			position.y += speed * time::delta;
 		}
 
 		if (Keyboard::isKeyPressed(Keyboard::A))
 		{
-			position.x -= speed;
+			position.x -= speed * time::delta;
 		}
 
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
-			position.x += speed;
+			position.x += speed * time::delta;
+		}
+
+		float incr = 0.02f;
+		if (Keyboard::isKeyPressed(Keyboard::R))
+		{
+			time::Scale += incr * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::T))
+		{
+			time::Scale -= incr * time::deltaUnscaled;
+		}
+
+		if (isKeyPressedTap(Keyboard::Y))
+		{
+			draw = !draw;
 		}
 	}
 };
 
-class camera : public world_object
+class Camera : public GameObject
 {
 	float zoom = 10;
 
-	camera()
+	Camera() : GameObject(true)
 	{
 		init_behavior;
 	}
 };
 
-void set_current_level(level* destination)
+void SetLevel(Level* destination)
 {
 	if (destination == nullptr)
 	{
 		printf("\nError when setting level: provided level was null.");
 		return;
 	}
-	if (current_level != nullptr)
+	if (ActiveLevel != nullptr)
 	{
-		if (destination->name != current_level->name)
+		if (destination->name != ActiveLevel->name)
 		{
-			current_level = destination;
+			ActiveLevel = destination;
 		}
 	}
 }
 
-vector<world_object*> world_object::active_objects = vector<world_object*>();
+vector<GameObject*> GameObject::ActiveObjects = vector<GameObject*>();
 
-void update_active_objects()
+void UpdateGameObjects()
 {
-	for (size_t i = 0; i < world_object::active_objects.size(); i++)
+	for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
 	{
-		world_object::active_objects[i]->tick();
+		GameObject::ActiveObjects[i]->tick();
 	}
 }
 
