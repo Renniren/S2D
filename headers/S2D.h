@@ -28,17 +28,6 @@ string game_debug_name = "S2D Test Game (Debug): ";
 #ifndef S2D_EVENTS
 #define S2D_EVENTS
 
-class object
-{
-public:
-	int instance_id;
-
-	virtual string to_string()
-	{
-
-		return "";
-	}
-};
 
 #endif
 
@@ -53,9 +42,8 @@ RenderWindow* GAME_WINDOW;
 sf::Event event;
 
 bool doClear = true;
-enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways, SimulateAlwaysDontDraw };
 
-void clamp(float& num, float lower, float upper)
+void clamp(float& num, float&& lower, float&& upper)
 {
 	if (num < lower) num = lower;
 	if (num > upper) num = upper;
@@ -85,6 +73,18 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 	return false;
 }
 
+class object
+{
+public:
+	int instance_id;
+
+	virtual string to_string()
+	{
+
+		return "";
+	}
+};
+
 class time
 {
 	static Clock global_clock;
@@ -102,7 +102,7 @@ public:
 
 	static void update()
 	{
-		clamp(Scale, 0, 1);
+		clamp(Scale, -1, 1);
 
 		_time = global_clock.getElapsedTime();
 		current = _time.asMilliseconds();
@@ -150,7 +150,6 @@ World ActiveWorld = DefaultWorld;
 Level* DefaultLevel = new Level(string("Default Level"), DefaultWorld);
 Level* ActiveLevel = DefaultLevel;
 
-
 //keeps record of every loaded texture, and their accompanying sprite to keep textures alive
 vector<pair<Texture*, Sprite*>> LoadedTextures;
 void CreateTexturePair(Texture* tex, Sprite* spr)
@@ -172,15 +171,18 @@ Sprite CreateSprite(string texturepath)
 class GameObject
 {
 public:
-	static vector<GameObject*> ActiveObjects;
+	enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways };
+
+
 	Vector2f position, scale;
 	Level* parent_level;
 	Sprite sprite;
 	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
 	string name;
-	float rotation;
 
+	float rotation;
 	bool active, draw = true;
+	static vector<GameObject*> ActiveObjects;
 
 	void levelChanged()
 	{
@@ -231,57 +233,7 @@ public:
 	}
 };
 
-class TestPlayer : public GameObject, public object
-{
-public:
-	float speed = 4.0f;
 
-	TestPlayer() : GameObject(true)
-	{
-		init_behavior;
-
-		scale = Vector2f(0.03, 0.03);
-		sprite = CreateSprite("sprites\\circle.png");
-	}
-
-	void update()
-	{
-		if (Keyboard::isKeyPressed(Keyboard::W))
-		{
-			position.y -= speed * time::delta;
-		}
-		if (Keyboard::isKeyPressed(Keyboard::S))
-		{
-			position.y += speed * time::delta;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::A))
-		{
-			position.x -= speed * time::delta;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::D))
-		{
-			position.x += speed * time::delta;
-		}
-
-		float incr = 0.02f;
-		if (Keyboard::isKeyPressed(Keyboard::R))
-		{
-			time::Scale += incr * time::deltaUnscaled;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::T))
-		{
-			time::Scale -= incr * time::deltaUnscaled;
-		}
-
-		if (isKeyPressedTap(Keyboard::Y))
-		{
-			draw = !draw;
-		}
-	}
-};
 
 class Camera : public GameObject
 {
@@ -318,5 +270,110 @@ void UpdateGameObjects()
 		GameObject::ActiveObjects[i]->tick();
 	}
 }
+
+class Physics
+{
+public:
+	static Vector2f Gravity;
+
+	enum CollisionShape { Box, Circle, Triangle, None };
+
+	class PhysicsObject : public GameObject
+	{
+		float gravityInfluence = 0.01f;
+	public:
+		float mass = 1;
+		float drag = 0;
+
+		bool isStatic = false;
+		bool respectsTime = true;
+
+		Vector2f velocity;
+		PhysicsObject() : GameObject(true)
+		{
+			init_behavior;
+		}
+
+		void update()
+		{
+			if (respectsTime)
+			{
+				velocity -= Gravity * gravityInfluence * time::delta;
+				position += velocity * time::delta;
+			}
+			else
+			{
+				velocity -= Gravity * gravityInfluence * time::deltaUnscaled;
+				position += velocity * time::deltaUnscaled;
+			}
+		}
+	};
+};
+
+
+Vector2f Physics::Gravity = Vector2f(0, -9.81f);
+
+class PhysicsTestObject : public Physics::PhysicsObject
+{
+public:
+	PhysicsTestObject()
+	{
+		position = Vector2f(1, 4);
+		scale = Vector2f(0.03, 0.03);
+		sprite = CreateSprite("sprites\\circle.png");
+	}
+};
+
+class TestPlayer : public GameObject, public object
+{
+public:
+	float speed = 4.0f;
+
+	TestPlayer() : GameObject(true)
+	{
+		init_behavior;
+
+		scale = Vector2f(0.03, 0.03);
+		sprite = CreateSprite("sprites\\circle.png");
+	}
+
+	void update()
+	{
+		if (Keyboard::isKeyPressed(Keyboard::W))
+		{
+			position.y -= speed * time::deltaUnscaled;
+		}
+		if (Keyboard::isKeyPressed(Keyboard::S))
+		{
+			position.y += speed * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::A))
+		{
+			position.x -= speed * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::D))
+		{
+			position.x += speed * time::deltaUnscaled;
+		}
+
+		float incr = 0.02f;
+		if (Keyboard::isKeyPressed(Keyboard::R))
+		{
+			time::Scale += incr * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::T))
+		{
+			time::Scale -= incr * time::deltaUnscaled;
+		}
+
+		if (isKeyPressedTap(Keyboard::Y))
+		{
+			draw = !draw;
+		}
+	}
+};
 
 #endif

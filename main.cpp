@@ -9,7 +9,9 @@ int main()
     time::init();
     
     TestPlayer* test = new TestPlayer();
+    PhysicsTestObject* test2 = new PhysicsTestObject();
     test->parent_level = ActiveLevel;
+    test2->parent_level = ActiveLevel;
     while(GAME_WINDOW->isOpen())
     {
     #ifdef S2D_DEBUG
@@ -18,8 +20,8 @@ int main()
     #ifndef S2D_DEBUG
             GAME_WINDOW->setTitle(game_name);
     #endif
+
         if(doClear) GAME_WINDOW->clear(ActiveWorld.clear_color);
-        
 
         while (GAME_WINDOW->pollEvent(event))
         {
