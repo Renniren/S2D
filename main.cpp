@@ -1,38 +1,42 @@
 #include "S2D.h"
 
+sf::Event event;
 int main()
 {
-  
-    RenderWindow window(VideoMode(800, 600), "window");
-    GAME_WINDOW = &window;
-    
-    time::init();
-    
-    TestPlayer* test = new TestPlayer();
-    PhysicsTestObject* test2 = new PhysicsTestObject();
-    test->parent_level = ActiveLevel;
-    test2->parent_level = ActiveLevel;
-    while(GAME_WINDOW->isOpen())
-    {
-    #ifdef S2D_DEBUG
-            GAME_WINDOW->setTitle(game_debug_name + ActiveWorld.name);
-    #endif
-    #ifndef S2D_DEBUG
-            GAME_WINDOW->setTitle(game_name);
-    #endif
+	S2DRuntime* runtime = new S2DRuntime();
 
-        if(doClear) GAME_WINDOW->clear(ActiveWorld.clear_color);
+	RenderWindow window(VideoMode(800, 600), "window");
+	runtime->GAME_WINDOW = &window;
+	
+	time::init();
+	
+	S2DRuntime::Instance = runtime;
 
-        while (GAME_WINDOW->pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed) GAME_WINDOW->close();
-        }
+	TestPlayer* test = new TestPlayer();
+	PhysicsTestObject* test2 = new PhysicsTestObject();
+	test->parent_level = LevelManager::ActiveLevel;
+	test2->parent_level = LevelManager::ActiveLevel;
+	while(runtime->GAME_WINDOW->isOpen())
+	{
+	#ifdef S2D_DEBUG
+		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+	#endif
+	#ifndef S2D_DEBUG
+			GAME_WINDOW->setTitle(game_name);
+	#endif
 
-        time::update();
-        UpdateGameObjects();
-        
-        GAME_WINDOW->display();
-    }
+		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
+
+		while (runtime->GAME_WINDOW->pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed) runtime->GAME_WINDOW->close();
+		}
+
+		time::update();
+		UpdateGameObjects();
+		
+		runtime->GAME_WINDOW->display();
+	}
 
 
   return 0;

@@ -10,36 +10,183 @@
 using namespace sf;
 using namespace std;
 
-#ifndef S2D_DEFINES
-#define S2D_DEFINES
+#ifndef GUARD_S2D_DEFINES
+#define GUARD_S2D_DEFINES
 
-#define S2D_DEBUG
+//#define S2D_DEBUG
 
 #endif // !S2D_DEFINES
 
-#ifndef S2D_SETTINGS
-#define S2D_SETTINGS
+#ifndef GUARD_S2D_SETTINGS
+#define GUARD_S2D_SETTINGS
 
 string game_name = "S2D Game";
 string game_debug_name = "S2D Test Game (Debug): ";
 
 #endif
 
-#ifndef S2D_EVENTS
-#define S2D_EVENTS
+#ifndef GUARD_S2D_EVENTS
+#define GUARD_S2D_EVENTS
 
 
 #endif
 
-#ifndef S2D_MACROS
-#define S2D_MACROS
+#ifndef GUARD_S2D_MACROS
+#define GUARD_S2D_MACROS
 
-#define init_behavior ActiveObjects.push_back(&(*this))
+#define init_behavior ActiveObjects.push_back(this)
+
+#define S2D_DEBUG 1
+#define S2D_RELEASE 0
+#define IS_DEBUG (S2DRuntime::get()->release_mode == S2D_DEBUG)
 
 #endif
 
-RenderWindow* GAME_WINDOW;
-sf::Event event;
+enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
+
+class object
+{
+public:
+	int instance_id;
+
+	virtual string to_string()
+	{
+		return "";
+	}
+};
+
+class Updatable
+{
+public:
+	SimulationMode flags = SimulationMode::SimulateOnlyWhenLevelActive;
+
+	bool active;
+	virtual void update() {}
+};
+
+
+class World
+{
+public:
+	string name;
+	Color clear_color;
+
+	World()
+	{
+
+	}
+
+	World(string name, Color bg)
+	{
+		this->name = name;
+		this->clear_color = bg;
+	}
+};
+
+class Level
+{
+public:
+	string name;
+	World world_settings;
+	int id;
+
+	Level(string name, World settings)
+	{
+		this->name = name;
+		this->world_settings = settings;
+	}
+};
+
+class S2DRuntime
+{
+public:
+	int release_mode = S2D_RELEASE;
+	RenderWindow* GAME_WINDOW = nullptr;
+	
+	static S2DRuntime* Instance;
+	static S2DRuntime* get()
+	{
+		static bool n = (Instance == nullptr);
+		if (n)
+		{
+			Instance = new S2DRuntime();
+		}
+
+		return Instance;
+	}
+};
+
+enum LoadLevelType {Override, Background};
+class LevelManager
+{
+public:
+	static Level* DefaultLevel;
+	static Level* ActiveLevel;
+	vector<Level*>LoadedLevels = vector<Level*>();
+	
+	void LoadLevel(Level level, LoadLevelType mode = LoadLevelType::Override)
+	{
+		switch (mode)
+		{
+			case LoadLevelType::Override:
+
+			break;
+
+			case LoadLevelType::Background:
+
+			break;
+		}
+	}
+
+	void SetLevel(Level* destination)
+	{
+		if (destination == nullptr)
+		{
+			printf("\nError when setting level: provided level was null.");
+			return;
+		}
+		if (ActiveLevel != nullptr)
+		{
+			if (destination->name != ActiveLevel->name)
+			{
+				ActiveLevel = destination;
+			}
+		}
+	}
+};
+
+Level* LevelManager::DefaultLevel = new Level(string("Default Level"), World("World", Color::Black));
+Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
+
+double dist(Vector2f a, Vector2f b)
+{
+	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
+}
+
+class Physics
+{
+public:
+	static Vector2f Gravity;
+	enum collisionShape { Box, Circle, Triangle, None };
+
+	bool CheckCirclevsCircle(Vector2f a, Vector2f b, float rad1, float rad2)
+	{
+		return dist(a, b) < rad1 || dist(b, a) < rad2;
+	}
+
+	
+};
+
+
+Vector2f Physics::Gravity = Vector2f(0, 9.81f);
+
+void test()
+{
+	
+}
+
+
+S2DRuntime* S2DRuntime::Instance = nullptr;
 
 bool doClear = true;
 
@@ -54,6 +201,8 @@ void clamp(int& num, int lower, int upper)
 	if (num < lower) num = lower;
 	if (num > upper) num = upper;
 }
+
+
 
 bool isKeyPressedTap(sf::Keyboard::Key query)
 {
@@ -73,17 +222,6 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 	return false;
 }
 
-class object
-{
-public:
-	int instance_id;
-
-	virtual string to_string()
-	{
-
-		return "";
-	}
-};
 
 class time
 {
@@ -102,7 +240,7 @@ public:
 
 	static void update()
 	{
-		clamp(Scale, -1, 1);
+		clamp(Scale, 0, 1);
 
 		_time = global_clock.getElapsedTime();
 		current = _time.asMilliseconds();
@@ -117,38 +255,13 @@ public:
 	}
 };
 
-float time::delta = 0, time::deltaUnscaled = 0;
-Int64 time::current = 0, time::last = 0;
-Time time::_time = Time();
-Clock time::global_clock = Clock();
-
-float time::Scale = 1;
-
-class World
-{
-public:
-	string name;
-	Color clear_color;
-};
-
-class Level
-{
-public:
-	string name;
-	World world_settings;
-
-	Level(string name, World settings)
-	{
-		this->name = name;
-		this->world_settings = settings;
-	}
-};
-
-World DefaultWorld = { "World", Color::Black };
-World ActiveWorld = DefaultWorld;
-
-Level* DefaultLevel = new Level(string("Default Level"), DefaultWorld);
-Level* ActiveLevel = DefaultLevel;
+float		time::Scale					= 1;
+float		time::delta					= 0, 
+			time::deltaUnscaled	= 0;
+Int64	time::current				= 0, 
+			time::last						= 0;
+Time		time::_time					= Time();
+Clock	time::global_clock		= Clock();
 
 //keeps record of every loaded texture, and their accompanying sprite to keep textures alive
 vector<pair<Texture*, Sprite*>> LoadedTextures;
@@ -168,18 +281,29 @@ Sprite CreateSprite(string texturepath)
 	return *ret;
 }
 
-class GameObject
+class GameObject : public Updatable
 {
 public:
-	enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways };
 
+	
 
 	Vector2f position, scale;
 	Level* parent_level;
 	Sprite sprite;
-	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
 	string name;
+	
 
+	float mass = 1;
+	float drag = 0;
+	float gravityInfluence = 0.01f;
+
+	bool isStatic = false;
+	bool hasPhysics = false;
+	bool respectsTime = true;
+
+	Physics::collisionShape CollisionShape;
+	Vector2f velocity;
+	
 	float rotation;
 	bool active, draw = true;
 	static vector<GameObject*> ActiveObjects;
@@ -189,33 +313,50 @@ public:
 
 	}
 
-	virtual void update(){}
+	void updatePhysics()
+	{
+		if (!hasPhysics) return;
+		if (respectsTime)
+		{
+			velocity += Physics::Gravity * gravityInfluence * time::delta;
+			position += velocity * time::delta;
+		}
+		else
+		{
+			velocity -= Physics::Gravity * gravityInfluence * time::deltaUnscaled;
+			position += velocity * time::deltaUnscaled;
+		}
+	}
+
 
 	void tick()
 	{
 		if (!active) return;
+
 		switch (this->flags)
 		{
 		case SimulateAlways:
 			if (draw)
-			{
+			{;
+				updatePhysics();
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
-				GAME_WINDOW->draw(sprite);
+				S2DRuntime::get()->GAME_WINDOW->draw(sprite);
 			}
 				
 			update();
 			break;
 
 		case SimulateOnlyWhenLevelActive:
-			if (parent_level->name != ActiveLevel->name) return;
+			if (parent_level->name != LevelManager::ActiveLevel->name) return;
 			if (draw)
 			{
+				updatePhysics();
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
-				GAME_WINDOW->draw(sprite);
+				S2DRuntime::get()->GAME_WINDOW->draw(sprite);
 			}
 
 			update();
@@ -233,6 +374,23 @@ public:
 	}
 };
 
+class PhysicsObject : public GameObject
+{
+
+public:
+
+	PhysicsObject() : GameObject(true)
+	{
+		init_behavior;
+	}
+
+
+
+	void update()
+	{
+
+	}
+};
 
 
 class Camera : public GameObject
@@ -245,21 +403,7 @@ class Camera : public GameObject
 	}
 };
 
-void SetLevel(Level* destination)
-{
-	if (destination == nullptr)
-	{
-		printf("\nError when setting level: provided level was null.");
-		return;
-	}
-	if (ActiveLevel != nullptr)
-	{
-		if (destination->name != ActiveLevel->name)
-		{
-			ActiveLevel = destination;
-		}
-	}
-}
+
 
 vector<GameObject*> GameObject::ActiveObjects = vector<GameObject*>();
 
@@ -271,53 +415,14 @@ void UpdateGameObjects()
 	}
 }
 
-class Physics
+
+
+class PhysicsTestObject : public GameObject
 {
 public:
-	static Vector2f Gravity;
-
-	enum CollisionShape { Box, Circle, Triangle, None };
-
-	class PhysicsObject : public GameObject
+	PhysicsTestObject() : GameObject(true)
 	{
-		float gravityInfluence = 0.01f;
-	public:
-		float mass = 1;
-		float drag = 0;
-
-		bool isStatic = false;
-		bool respectsTime = true;
-
-		Vector2f velocity;
-		PhysicsObject() : GameObject(true)
-		{
-			init_behavior;
-		}
-
-		void update()
-		{
-			if (respectsTime)
-			{
-				velocity -= Gravity * gravityInfluence * time::delta;
-				position += velocity * time::delta;
-			}
-			else
-			{
-				velocity -= Gravity * gravityInfluence * time::deltaUnscaled;
-				position += velocity * time::deltaUnscaled;
-			}
-		}
-	};
-};
-
-
-Vector2f Physics::Gravity = Vector2f(0, -9.81f);
-
-class PhysicsTestObject : public Physics::PhysicsObject
-{
-public:
-	PhysicsTestObject()
-	{
+		hasPhysics = true;
 		position = Vector2f(1, 4);
 		scale = Vector2f(0.03, 0.03);
 		sprite = CreateSprite("sprites\\circle.png");
@@ -355,7 +460,7 @@ public:
 
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
-			position.x += speed * time::deltaUnscaled;
+			position.x += speed * time::delta;
 		}
 
 		float incr = 0.02f;
@@ -375,5 +480,7 @@ public:
 		}
 	}
 };
+
+
 
 #endif
