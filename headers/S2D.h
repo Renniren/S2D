@@ -34,12 +34,17 @@ string game_debug_name = "S2D Test Game (Debug): ";
 #ifndef S2D_MACROS
 #define S2D_MACROS
 
+#define S2D_GAME_ANY -1
+#define S2D_GAME_DEBUG 1
+#define S2D_GAME_RELEASE 0
+#define IS_DEBUG S2DGameRuntime::get()->config == S2D_GAME_DEBUG
 #define init_behavior ActiveObjects.push_back(&(*this))
 
 #endif
 
-RenderWindow* GAME_WINDOW;
+
 sf::Event event;
+enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
 
 bool doClear = true;
 
@@ -97,7 +102,10 @@ public:
 
 	static void init()
 	{
-		global_clock = Clock();
+		static bool i = false;
+		if (i) return;
+		if (!i) global_clock = Clock();
+		i = true;
 	}
 
 	static void update()
@@ -136,6 +144,7 @@ class Level
 public:
 	string name;
 	World world_settings;
+	int required_config = S2D_GAME_ANY;
 
 	Level(string name, World settings)
 	{
@@ -143,6 +152,31 @@ public:
 		this->world_settings = settings;
 	}
 };
+
+class S2DGameRuntime
+{
+private:
+	S2DGameRuntime() {}
+	static S2DGameRuntime* Instance;
+
+public:
+	int config = 0;
+	RenderWindow* Window;
+	static S2DGameRuntime* get()
+	{
+		if (Instance == nullptr) Instance = new S2DGameRuntime();
+		return Instance;
+	}
+
+	static int init()
+	{
+		RenderWindow* window = new RenderWindow(VideoMode(800, 600), "window");
+		get()->Window = window;
+		time::init();
+	}
+};
+
+S2DGameRuntime* S2DGameRuntime::Instance = nullptr;
 
 World DefaultWorld = { "World", Color::Black };
 World ActiveWorld = DefaultWorld;
@@ -171,13 +205,10 @@ Sprite CreateSprite(string texturepath)
 class GameObject
 {
 public:
-	enum simulate_flags { SimulateOnlyWhenLevelActive, SimulateAlways };
-
-
 	Vector2f position, scale;
 	Level* parent_level;
 	Sprite sprite;
-	simulate_flags flags = simulate_flags::SimulateOnlyWhenLevelActive;
+	SimulationMode flags = SimulationMode::SimulateOnlyWhenLevelActive;
 	string name;
 
 	float rotation;
@@ -189,7 +220,7 @@ public:
 
 	}
 
-	virtual void update(){}
+	virtual void update() {}
 
 	void tick()
 	{
@@ -202,9 +233,9 @@ public:
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
-				GAME_WINDOW->draw(sprite);
+				S2DGameRuntime::get()->Window->draw(sprite);
 			}
-				
+
 			update();
 			break;
 
@@ -215,7 +246,7 @@ public:
 				sprite.setPosition(position);
 				sprite.setRotation(rotation);
 				sprite.setScale(scale);
-				GAME_WINDOW->draw(sprite);
+				S2DGameRuntime::get()->Window->draw(sprite);
 			}
 
 			update();
@@ -277,6 +308,12 @@ public:
 	static Vector2f Gravity;
 
 	enum CollisionShape { Box, Circle, Triangle, None };
+
+	struct CollisionData
+	{
+		Vector2f point;
+
+	};
 
 	class PhysicsObject : public GameObject
 	{

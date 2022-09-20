@@ -2,36 +2,34 @@
 
 int main()
 {
-  
-    RenderWindow window(VideoMode(800, 600), "window");
-    GAME_WINDOW = &window;
-    
-    time::init();
-    
+
+    S2DGameRuntime::init();
     TestPlayer* test = new TestPlayer();
     PhysicsTestObject* test2 = new PhysicsTestObject();
     test->parent_level = ActiveLevel;
     test2->parent_level = ActiveLevel;
-    while(GAME_WINDOW->isOpen())
+    while(S2DGameRuntime::get()->Window->isOpen())
     {
-    #ifdef S2D_DEBUG
-            GAME_WINDOW->setTitle(game_debug_name + ActiveWorld.name);
-    #endif
-    #ifndef S2D_DEBUG
-            GAME_WINDOW->setTitle(game_name);
-    #endif
-
-        if(doClear) GAME_WINDOW->clear(ActiveWorld.clear_color);
-
-        while (GAME_WINDOW->pollEvent(event))
+        if (IS_DEBUG)
         {
-            if (event.type == sf::Event::Closed) GAME_WINDOW->close();
+            S2DGameRuntime::get()->Window->setTitle(game_debug_name + ActiveWorld.name);
+        }
+        else
+        {
+            S2DGameRuntime::get()->Window->setTitle(game_name);
+        }
+
+        if(doClear) S2DGameRuntime::get()->Window->clear(ActiveWorld.clear_color);
+
+        while (S2DGameRuntime::get()->Window->pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed) S2DGameRuntime::get()->Window->close();
         }
 
         time::update();
         UpdateGameObjects();
         
-        GAME_WINDOW->display();
+        S2DGameRuntime::get()->Window->display();
     }
 
 
