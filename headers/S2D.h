@@ -477,6 +477,7 @@ class PhysicsTestObject : public GameObject
 public:
 	PhysicsTestObject() : GameObject(true)
 	{
+		init_behavior;
 		hasPhysics = true;
 		position = Vector2f(1, 4);
 		scale = Vector2f(0.03, 0.03);

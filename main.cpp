@@ -16,14 +16,28 @@ int main()
 	PhysicsTestObject* test2 = new PhysicsTestObject();
 	test->parent_level = LevelManager::ActiveLevel;
 	test2->parent_level = LevelManager::ActiveLevel;
+	
+	if (runtime->release_mode == S2D_RELEASE)
+	{
+		runtime->GAME_WINDOW->setTitle(game_name);
+	}
+
+	if (runtime->release_mode == S2D_DEBUG)
+	{
+		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+	}
+	
 	while(runtime->GAME_WINDOW->isOpen())
 	{
-	#ifdef S2D_DEBUG
-		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+		
+
+
+			/*#ifdef S2D_DEBUG
+		
 	#endif
 	#ifndef S2D_DEBUG
 			GAME_WINDOW->setTitle(game_name);
-	#endif
+	#endif*/
 
 		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 
