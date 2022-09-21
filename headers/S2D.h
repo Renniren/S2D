@@ -392,7 +392,7 @@ public:
 		{
 		case SimulateAlways:
 			if (draw)
-			{;
+			{
 				updatePhysics();
 				sprite.s.setPosition(position);
 				sprite.s.setRotation(rotation);
