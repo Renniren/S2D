@@ -1,36 +1,56 @@
 #include "S2D.h"
 
+sf::Event event;
 int main()
 {
+	S2DRuntime* runtime = new S2DRuntime();
 
-    S2DGameRuntime::init();
-    TestPlayer* test = new TestPlayer();
-    PhysicsTestObject* test2 = new PhysicsTestObject();
-    test->parent_level = ActiveLevel;
-    test2->parent_level = ActiveLevel;
-    while(S2DGameRuntime::get()->Window->isOpen())
-    {
-        if (IS_DEBUG)
-        {
-            S2DGameRuntime::get()->Window->setTitle(game_debug_name + ActiveWorld.name);
-        }
-        else
-        {
-            S2DGameRuntime::get()->Window->setTitle(game_name);
-        }
+	RenderWindow window(VideoMode(800, 600), "window");
+	runtime->GAME_WINDOW = &window;
+	
+	time::init();
+	
+	S2DRuntime::Instance = runtime;
 
-        if(doClear) S2DGameRuntime::get()->Window->clear(ActiveWorld.clear_color);
+	TestPlayer* test = new TestPlayer();
+	PhysicsTestObject* test2 = new PhysicsTestObject();
+	test->parent_level = LevelManager::ActiveLevel;
+	test2->parent_level = LevelManager::ActiveLevel;
+	
+	if (runtime->release_mode == S2D_RELEASE)
+	{
+		runtime->GAME_WINDOW->setTitle(game_name);
+	}
 
-        while (S2DGameRuntime::get()->Window->pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed) S2DGameRuntime::get()->Window->close();
-        }
+	if (runtime->release_mode == S2D_DEBUG)
+	{
+		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+	}
+	
+	while(runtime->GAME_WINDOW->isOpen())
+	{
+		
 
-        time::update();
-        UpdateGameObjects();
-        
-        S2DGameRuntime::get()->Window->display();
-    }
+
+			/*#ifdef S2D_DEBUG
+		
+	#endif
+	#ifndef S2D_DEBUG
+			GAME_WINDOW->setTitle(game_name);
+	#endif*/
+
+		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
+
+		while (runtime->GAME_WINDOW->pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed) runtime->GAME_WINDOW->close();
+		}
+
+		time::update();
+		UpdateGameObjects();
+		
+		runtime->GAME_WINDOW->display();
+	}
 
 
   return 0;
