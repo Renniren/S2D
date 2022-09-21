@@ -11,11 +11,12 @@ int main()
 	time::init();
 
 	S2DRuntime::Instance = runtime;
-
+	Camera* cam = new Camera();
 	TestPlayer* test = new TestPlayer();
 	PhysicsTestObject* test2 = new PhysicsTestObject();
-	test->parent_level = LevelManager::ActiveLevel;
-	test2->parent_level = LevelManager::ActiveLevel;
+	//test->parent_level = LevelManager::ActiveLevel;
+	//test2->parent_level = LevelManager::ActiveLevel;
+	//cam->parent_level = LevelManager::ActiveLevel;
 	
 	if (runtime->release_mode == S2D_RELEASE)
 	{
@@ -26,14 +27,12 @@ int main()
 	{
 		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
 	}
+
+	vector<TestPlayer*> plys = vector<TestPlayer*>();
+	bool d;
 	printf("init");
 	while(runtime->GAME_WINDOW->isOpen())
 	{
-		
-		if (isKeyPressedTap(Keyboard::N))
-		{
-			printf("tap test");
-		}
 
 			/*#ifdef S2D_DEBUG
 		
@@ -49,10 +48,36 @@ int main()
 			if (event.type == sf::Event::Closed) runtime->GAME_WINDOW->close();
 		}
 
+		if (isKeyPressedTap(Keyboard::P))
+		{
+			if (!d)
+			{
+				cout << "sadfdf";
+				printf("\ntest");
+				for (size_t i = 0; i < 64; i++)
+				{
+					plys.push_back(new TestPlayer());
+				}
+
+				for (size_t i = 0; i < plys.size(); i++)
+				{
+					plys[i]->Destroy();
+				}
+				TextureManager::RegenerateLoadedTextureList();
+				d = true;
+				printf("\nCompleted test");
+			}
+		}
+		else
+		{
+			d = false;
+		}
+
 		time::update();
 		UpdateGameObjects();
 		
 		runtime->GAME_WINDOW->display();
+		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
 
 

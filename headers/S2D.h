@@ -36,6 +36,7 @@ string game_debug_name = "S2D Test Game (Debug): ";
 
 #define init_behavior ActiveObjects.push_back(this)
 
+#define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
 #define S2D_DEBUG 1
 #define S2D_RELEASE 0
 #define IS_DEBUG (S2DRuntime::get()->release_mode == S2D_DEBUG)
@@ -298,45 +299,63 @@ public:
 	}
 };
 
-vector<S2DTextureSpritePair> LoadedTextures;
-S2DTextureSpritePair CreateTexturePair(Texture* tex, Sprite* spr)
+class TextureManager
 {
-	S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
-	LoadedTextures.push_back(tsp);
-	return tsp;
-}
-
-void CleanUpTexturePair(int id)
-{
-	for (size_t i = 0; i < LoadedTextures.size(); i++)
+public:
+	static vector<S2DTextureSpritePair> LoadedTextures;
+	static S2DTextureSpritePair CreateTexturePair(Texture* tex, Sprite* spr)
 	{
-		if (LoadedTextures[i].id == id)
+		S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
+		LoadedTextures.push_back(tsp);
+		return tsp;
+	}
+
+	static void RegenerateLoadedTextureList()
+	{
+		int null_id = -1;
+		vector<S2DTextureSpritePair> new_list = vector<S2DTextureSpritePair>();
+		for (size_t i = 0; i < LoadedTextures.size(); i++)
 		{
-			delete LoadedTextures[i].tex;
-			delete LoadedTextures[i].sprite;
-			LoadedTextures[i].id = -1;
-			break;
+			if (LoadedTextures[i].id != null_id)
+			{
+				new_list.push_back(LoadedTextures[i]);
+			}
+		}
+		LoadedTextures.clear();
+		LoadedTextures = new_list;
+	}
+
+	static void CleanUpTexturePair(int id)
+	{
+		for (size_t i = 0; i < LoadedTextures.size(); i++)
+		{
+			if (LoadedTextures[i].id == id)
+			{
+				delete LoadedTextures[i].tex;
+				delete LoadedTextures[i].sprite;
+				LoadedTextures[i].id = -1;
+				break;
+			}
 		}
 	}
-}
 
-GameObjectSprite CreateSprite(string texturepath)
-{
-	Texture* texture = new Texture();
-	Sprite* ret;
-	if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, Sprite());
-	ret = new Sprite(*texture);
-	S2DTextureSpritePair s = CreateTexturePair(texture, ret);
-	ret->setOrigin(0.25f, 0.25f);
-	return GameObjectSprite(s.id, *ret);
-}
+	static GameObjectSprite CreateSprite(string texturepath)
+	{
+		Texture* texture = new Texture();
+		Sprite* ret;
+		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, Sprite());
+		ret = new Sprite(*texture);
+		S2DTextureSpritePair s = CreateTexturePair(texture, ret);
+		ret->setOrigin(0.25f, 0.25f);
+		return GameObjectSprite(s.id, *ret);
+	}
+};
+
+vector<S2DTextureSpritePair> TextureManager::LoadedTextures = vector<S2DTextureSpritePair>();
 
 class GameObject : public Updatable
 {
 public:
-
-	
-
 	Vector2f position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
@@ -380,14 +399,19 @@ public:
 
 	void Destroy()
 	{
-		CleanUpTexturePair(sprite.tsp_id);
+		TextureManager::CleanUpTexturePair(sprite.tsp_id);
 		delete this;
 	}
 
 	void tick()
 	{
 		if (!active) return;
-
+		if(parent_level == nullptr)
+		{
+			printf((string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
+			__debugbreak();
+			return;
+		}
 		switch (this->flags)
 		{
 		case SimulateAlways:
@@ -422,31 +446,12 @@ public:
 	GameObject(bool setActive)
 	{
 		active = setActive;
-		parent_level = nullptr;
+		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
 		position = Vector2f(0, 0);
 		name = "new WorldObject";
 	}
 };
-
-class PhysicsObject : public GameObject
-{
-
-public:
-
-	PhysicsObject() : GameObject(true)
-	{
-		init_behavior;
-	}
-
-
-
-	void update()
-	{
-
-	}
-};
-
 
 class Camera : public GameObject
 {
@@ -457,6 +462,7 @@ public:
 	Camera() : GameObject(true)
 	{
 		init_behavior;
+		name = "new Camera";
 		draw = false;
 		view = sf::View();
 	}
@@ -476,6 +482,10 @@ void UpdateGameObjects()
 {
 	for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
 	{
+		if (GameObject::ActiveObjects[i] == nullptr)
+		{
+			continue;
+		}
 		GameObject::ActiveObjects[i]->tick();
 	}
 }
@@ -491,7 +501,7 @@ public:
 		hasPhysics = true;
 		position = Vector2f(1, 4);
 		scale = Vector2f(0.03, 0.03);
-		sprite = CreateSprite("sprites\\circle.png");
+		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
 };
 
@@ -505,7 +515,7 @@ public:
 		init_behavior;
 
 		scale = Vector2f(0.03, 0.03);
-		sprite = CreateSprite("sprites\\circle.png");
+		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
 
 	void update()
@@ -533,16 +543,6 @@ public:
 		{
 			printf("test");
 			Destroy();
-		}
-
-		if (isKeyPressedTap(Keyboard::P))
-		{
-			printf("test1");
-		}
-
-		if (isKeyPressedTap(Keyboard::O))
-		{
-			printf("test2");
 		}
 
 
