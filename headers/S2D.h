@@ -206,7 +206,7 @@ void clamp(int& num, int lower, int upper)
 
 bool isKeyPressedTap(sf::Keyboard::Key query)
 {
-	static bool res;
+	static bool res = false;
 	if (Keyboard::isKeyPressed(query))
 	{
 		if (!res)
@@ -391,7 +391,7 @@ public:
 		switch (this->flags)
 		{
 		case SimulateAlways:
-			if (draw)
+			if (draw && &sprite.s != nullptr)
 			{
 				updatePhysics();
 				sprite.s.setPosition(position);
@@ -405,7 +405,7 @@ public:
 
 		case SimulateOnlyWhenLevelActive:
 			if (parent_level->name != LevelManager::ActiveLevel->name) return;
-			if (draw)
+			if (draw && &sprite.s != nullptr)
 			{
 				updatePhysics();
 				sprite.s.setPosition(position);
@@ -450,11 +450,21 @@ public:
 
 class Camera : public GameObject
 {
+public:
 	float zoom = 10;
+	sf::View view;
 
 	Camera() : GameObject(true)
 	{
 		init_behavior;
+		draw = false;
+		view = sf::View();
+	}
+
+	void update()
+	{
+		view.move(position);
+		view.rotate(rotation);
 	}
 };
 
@@ -524,6 +534,18 @@ public:
 			printf("test");
 			Destroy();
 		}
+
+		if (isKeyPressedTap(Keyboard::P))
+		{
+			printf("test1");
+		}
+
+		if (isKeyPressedTap(Keyboard::O))
+		{
+			printf("test2");
+		}
+
+
 
 		float incr = 0.02f;
 		if (Keyboard::isKeyPressed(Keyboard::R))

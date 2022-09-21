@@ -9,7 +9,7 @@ int main()
 	runtime->GAME_WINDOW = &window;
 	
 	time::init();
-	
+
 	S2DRuntime::Instance = runtime;
 
 	TestPlayer* test = new TestPlayer();
@@ -26,11 +26,14 @@ int main()
 	{
 		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
 	}
-	
+	printf("init");
 	while(runtime->GAME_WINDOW->isOpen())
 	{
 		
-
+		if (isKeyPressedTap(Keyboard::N))
+		{
+			printf("tap test");
+		}
 
 			/*#ifdef S2D_DEBUG
 		
