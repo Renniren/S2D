@@ -263,22 +263,72 @@ Int64	time::current				= 0,
 Time		time::_time					= Time();
 Clock	time::global_clock		= Clock();
 
-//keeps record of every loaded texture, and their accompanying sprite to keep textures alive
-vector<pair<Texture*, Sprite*>> LoadedTextures;
-void CreateTexturePair(Texture* tex, Sprite* spr)
+//Created so that when a GameObject needs to be destroyed, we can also clean up the Sprite/Texture it also created.
+struct S2DTextureSpritePair
 {
-	LoadedTextures.push_back(pair<Texture*, Sprite*>(tex, spr));
+public:
+	int id;
+	Texture* tex;
+	Sprite* sprite;
+
+	S2DTextureSpritePair(int n, Texture* t, Sprite* s)
+	{
+		this->id = n;
+		this->tex = t;
+		this->sprite = s;
+	}
+};
+
+struct GameObjectSprite
+{
+public:
+	int tsp_id;
+	Sprite s;
+
+	GameObjectSprite()
+	{
+		tsp_id = -1;
+		s = Sprite();
+	}
+
+	GameObjectSprite(int tsp_id, Sprite s)
+	{
+		this->tsp_id = tsp_id;
+		this->s = s;
+	}
+};
+
+vector<S2DTextureSpritePair> LoadedTextures;
+S2DTextureSpritePair CreateTexturePair(Texture* tex, Sprite* spr)
+{
+	S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
+	LoadedTextures.push_back(tsp);
+	return tsp;
 }
 
-Sprite CreateSprite(string texturepath)
+void CleanUpTexturePair(int id)
+{
+	for (size_t i = 0; i < LoadedTextures.size(); i++)
+	{
+		if (LoadedTextures[i].id == id)
+		{
+			delete LoadedTextures[i].tex;
+			delete LoadedTextures[i].sprite;
+			LoadedTextures[i].id = -1;
+			break;
+		}
+	}
+}
+
+GameObjectSprite CreateSprite(string texturepath)
 {
 	Texture* texture = new Texture();
 	Sprite* ret;
-	if (!texture->loadFromFile(texturepath)) return Sprite();
+	if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, Sprite());
 	ret = new Sprite(*texture);
-	CreateTexturePair(texture, ret);
+	S2DTextureSpritePair s = CreateTexturePair(texture, ret);
 	ret->setOrigin(0.25f, 0.25f);
-	return *ret;
+	return GameObjectSprite(s.id, *ret);
 }
 
 class GameObject : public Updatable
@@ -289,7 +339,7 @@ public:
 
 	Vector2f position, scale;
 	Level* parent_level;
-	Sprite sprite;
+	GameObjectSprite sprite;
 	string name;
 	
 
@@ -328,6 +378,11 @@ public:
 		}
 	}
 
+	void Destroy()
+	{
+		CleanUpTexturePair(sprite.tsp_id);
+		delete this;
+	}
 
 	void tick()
 	{
@@ -339,10 +394,10 @@ public:
 			if (draw)
 			{;
 				updatePhysics();
-				sprite.setPosition(position);
-				sprite.setRotation(rotation);
-				sprite.setScale(scale);
-				S2DRuntime::get()->GAME_WINDOW->draw(sprite);
+				sprite.s.setPosition(position);
+				sprite.s.setRotation(rotation);
+				sprite.s.setScale(scale);
+				S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
 			}
 				
 			update();
@@ -353,10 +408,10 @@ public:
 			if (draw)
 			{
 				updatePhysics();
-				sprite.setPosition(position);
-				sprite.setRotation(rotation);
-				sprite.setScale(scale);
-				S2DRuntime::get()->GAME_WINDOW->draw(sprite);
+				sprite.s.setPosition(position);
+				sprite.s.setRotation(rotation);
+				sprite.s.setScale(scale);
+				S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
 			}
 
 			update();
@@ -461,6 +516,12 @@ public:
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
 			position.x += speed * time::delta;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::X))
+		{
+			printf("test");
+			Destroy();
 		}
 
 		float incr = 0.02f;
