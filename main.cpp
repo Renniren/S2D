@@ -3,6 +3,8 @@
 sf::Event event;
 int main()
 {
+	using namespace sf;
+	using namespace std;
 	S2DRuntime* runtime = new S2DRuntime();
 
 	RenderWindow window(VideoMode(800, 600), "window");
@@ -54,7 +56,7 @@ int main()
 			{
 				cout << "sadfdf";
 				printf("\ntest");
-				for (size_t i = 0; i < 64; i++)
+				for (size_t i = 0; i < 3; i++)
 				{
 					plys.push_back(new TestPlayer());
 				}
@@ -66,6 +68,7 @@ int main()
 				TextureManager::RegenerateLoadedTextureList();
 				d = true;
 				printf("\nCompleted test");
+
 			}
 		}
 		else

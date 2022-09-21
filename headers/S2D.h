@@ -7,9 +7,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-using namespace sf;
-using namespace std;
-
 #ifndef GUARD_S2D_DEFINES
 #define GUARD_S2D_DEFINES
 
@@ -20,8 +17,8 @@ using namespace std;
 #ifndef GUARD_S2D_SETTINGS
 #define GUARD_S2D_SETTINGS
 
-string game_name = "S2D Game";
-string game_debug_name = "S2D Test Game (Debug): ";
+std::string game_name = "S2D Game";
+std::string game_debug_name = "S2D Test Game (Debug): ";
 
 #endif
 
@@ -50,7 +47,7 @@ class object
 public:
 	int instance_id;
 
-	virtual string to_string()
+	virtual std::string to_string()
 	{
 		return "";
 	}
@@ -69,15 +66,15 @@ public:
 class World
 {
 public:
-	string name;
-	Color clear_color;
+	std::string name;
+	sf::Color clear_color;
 
 	World()
 	{
 
 	}
 
-	World(string name, Color bg)
+	World(std::string name, sf::Color bg)
 	{
 		this->name = name;
 		this->clear_color = bg;
@@ -87,11 +84,11 @@ public:
 class Level
 {
 public:
-	string name;
+	std::string name;
 	World world_settings;
 	int id;
 
-	Level(string name, World settings)
+	Level(std::string name, World settings)
 	{
 		this->name = name;
 		this->world_settings = settings;
@@ -102,7 +99,7 @@ class S2DRuntime
 {
 public:
 	int release_mode = S2D_RELEASE;
-	RenderWindow* GAME_WINDOW = nullptr;
+	sf::RenderWindow* GAME_WINDOW = nullptr;
 	
 	static S2DRuntime* Instance;
 	static S2DRuntime* get()
@@ -123,7 +120,7 @@ class LevelManager
 public:
 	static Level* DefaultLevel;
 	static Level* ActiveLevel;
-	vector<Level*>LoadedLevels = vector<Level*>();
+	std::vector<Level*>LoadedLevels = std::vector<Level*>();
 	
 	void LoadLevel(Level level, LoadLevelType mode = LoadLevelType::Override)
 	{
@@ -156,10 +153,10 @@ public:
 	}
 };
 
-Level* LevelManager::DefaultLevel = new Level(string("Default Level"), World("World", Color::Black));
+Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
 Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
 
-double dist(Vector2f a, Vector2f b)
+double dist(sf::Vector2f a, sf::Vector2f b)
 {
 	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
 }
@@ -167,10 +164,10 @@ double dist(Vector2f a, Vector2f b)
 class Physics
 {
 public:
-	static Vector2f Gravity;
+	static sf::Vector2f Gravity;
 	enum collisionShape { Box, Circle, Triangle, None };
 
-	bool CheckCirclevsCircle(Vector2f a, Vector2f b, float rad1, float rad2)
+	bool CheckCirclevsCircle(sf::Vector2f a, sf::Vector2f b, float rad1, float rad2)
 	{
 		return dist(a, b) < rad1 || dist(b, a) < rad2;
 	}
@@ -179,7 +176,7 @@ public:
 };
 
 
-Vector2f Physics::Gravity = Vector2f(0, 9.81f);
+sf::Vector2f Physics::Gravity = sf::Vector2f(0, 9.81f);
 
 void test()
 {
@@ -208,7 +205,7 @@ void clamp(int& num, int lower, int upper)
 bool isKeyPressedTap(sf::Keyboard::Key query)
 {
 	static bool res = false;
-	if (Keyboard::isKeyPressed(query))
+	if (sf::Keyboard::isKeyPressed(query))
 	{
 		if (!res)
 		{
@@ -226,9 +223,9 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 
 class time
 {
-	static Clock global_clock;
-	static Time _time;
-	static Int64 last, current;
+	static sf::Clock global_clock;
+	static sf::Time _time;
+	static sf::Int64 last, current;
 
 public:
 	static float delta, deltaUnscaled;
@@ -236,7 +233,7 @@ public:
 
 	static void init()
 	{
-		global_clock = Clock();
+		global_clock = sf::Clock();
 	}
 
 	static void update()
@@ -256,23 +253,23 @@ public:
 	}
 };
 
-float		time::Scale					= 1;
-float		time::delta					= 0, 
-			time::deltaUnscaled	= 0;
-Int64	time::current				= 0, 
-			time::last						= 0;
-Time		time::_time					= Time();
-Clock	time::global_clock		= Clock();
+float		time::Scale						= 1;
+float		time::delta						= 0, 
+			time::deltaUnscaled		= 0;
+sf::Int64	time::current				= 0,
+			time::last							= 0;
+sf::Time		time::_time				= sf::Time();
+sf::Clock	time::global_clock		= sf::Clock();
 
 //Created so that when a GameObject needs to be destroyed, we can also clean up the Sprite/Texture it also created.
 struct S2DTextureSpritePair
 {
 public:
 	int id;
-	Texture* tex;
-	Sprite* sprite;
+	sf::Texture* tex;
+	sf::Sprite* sprite;
 
-	S2DTextureSpritePair(int n, Texture* t, Sprite* s)
+	S2DTextureSpritePair(int n, sf::Texture* t, sf::Sprite* s)
 	{
 		this->id = n;
 		this->tex = t;
@@ -284,15 +281,15 @@ struct GameObjectSprite
 {
 public:
 	int tsp_id;
-	Sprite s;
+	sf::Sprite s;
 
 	GameObjectSprite()
 	{
 		tsp_id = -1;
-		s = Sprite();
+		s = sf::Sprite();
 	}
 
-	GameObjectSprite(int tsp_id, Sprite s)
+	GameObjectSprite(int tsp_id, sf::Sprite s)
 	{
 		this->tsp_id = tsp_id;
 		this->s = s;
@@ -302,8 +299,8 @@ public:
 class TextureManager
 {
 public:
-	static vector<S2DTextureSpritePair> LoadedTextures;
-	static S2DTextureSpritePair CreateTexturePair(Texture* tex, Sprite* spr)
+	static std::vector<S2DTextureSpritePair> LoadedTextures;
+	static S2DTextureSpritePair CreateTexturePair(sf::Texture* tex, sf::Sprite* spr)
 	{
 		S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
 		LoadedTextures.push_back(tsp);
@@ -313,9 +310,10 @@ public:
 	static void RegenerateLoadedTextureList()
 	{
 		int null_id = -1;
-		vector<S2DTextureSpritePair> new_list = vector<S2DTextureSpritePair>();
-		for (size_t i = 0; i < LoadedTextures.size(); i++)
+		std::vector<S2DTextureSpritePair> new_list = std::vector<S2DTextureSpritePair>();
+		for (int i = 0; i < LoadedTextures.size(); i++)
 		{
+			if (&LoadedTextures[i] == nullptr) continue;
 			if (LoadedTextures[i].id != null_id)
 			{
 				new_list.push_back(LoadedTextures[i]);
@@ -339,27 +337,27 @@ public:
 		}
 	}
 
-	static GameObjectSprite CreateSprite(string texturepath)
+	static GameObjectSprite CreateSprite(std::string texturepath)
 	{
-		Texture* texture = new Texture();
-		Sprite* ret;
-		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, Sprite());
-		ret = new Sprite(*texture);
+		sf::Texture* texture = new sf::Texture();
+		sf::Sprite* ret;
+		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, sf::Sprite());
+		ret = new sf::Sprite(*texture);
 		S2DTextureSpritePair s = CreateTexturePair(texture, ret);
 		ret->setOrigin(0.25f, 0.25f);
 		return GameObjectSprite(s.id, *ret);
 	}
 };
 
-vector<S2DTextureSpritePair> TextureManager::LoadedTextures = vector<S2DTextureSpritePair>();
+std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
 
 class GameObject : public Updatable
 {
 public:
-	Vector2f position, scale;
+	sf::Vector2f position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
-	string name;
+	std::string name;
 	
 
 	float mass = 1;
@@ -371,11 +369,11 @@ public:
 	bool respectsTime = true;
 
 	Physics::collisionShape CollisionShape;
-	Vector2f velocity;
+	sf::Vector2f velocity;
 	
 	float rotation;
 	bool active, draw = true;
-	static vector<GameObject*> ActiveObjects;
+	static std::vector<GameObject*> ActiveObjects;
 
 	void levelChanged()
 	{
@@ -408,7 +406,7 @@ public:
 		if (!active) return;
 		if(parent_level == nullptr)
 		{
-			printf((string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
+			printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
 			__debugbreak();
 			return;
 		}
@@ -448,7 +446,7 @@ public:
 		active = setActive;
 		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
-		position = Vector2f(0, 0);
+		position = sf::Vector2f(0, 0);
 		name = "new WorldObject";
 	}
 };
@@ -476,7 +474,7 @@ public:
 
 
 
-vector<GameObject*> GameObject::ActiveObjects = vector<GameObject*>();
+std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
 
 void UpdateGameObjects()
 {
@@ -499,8 +497,8 @@ public:
 	{
 		init_behavior;
 		hasPhysics = true;
-		position = Vector2f(1, 4);
-		scale = Vector2f(0.03, 0.03);
+		position = sf::Vector2f(1, 4);
+		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
 };
@@ -514,12 +512,13 @@ public:
 	{
 		init_behavior;
 
-		scale = Vector2f(0.03, 0.03);
+		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
 
 	void update()
 	{
+		using namespace sf;
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
 			position.y -= speed * time::deltaUnscaled;
