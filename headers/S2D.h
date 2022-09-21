@@ -32,6 +32,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define GUARD_S2D_MACROS
 
 #define init_behavior ActiveObjects.push_back(this)
+#define init_updatable UpdatableObjects.push_back(this)
 
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
 #define S2D_DEBUG 1
@@ -41,6 +42,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #endif
 
 enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
+enum DrawMode { DrawWhenLevelActive, DrawAlways, DontDraw };
 
 class object
 {
@@ -60,8 +62,16 @@ public:
 
 	bool active;
 	virtual void update() {}
-};
+	virtual void onDestroyed(){}
+	void u_tick()
+	{
+		if(active)update();
+	}
 
+	void destroyed() { onDestroyed(); }
+
+	static std::vector<Updatable*> UpdatableObjects;
+};
 
 class World
 {
@@ -364,15 +374,16 @@ public:
 	float drag = 0;
 	float gravityInfluence = 0.01f;
 
+	bool active;
 	bool isStatic = false;
 	bool hasPhysics = false;
 	bool respectsTime = true;
 
+	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
 	sf::Vector2f velocity;
 	
 	float rotation;
-	bool active, draw = true;
 	static std::vector<GameObject*> ActiveObjects;
 
 	void levelChanged()
@@ -398,45 +409,77 @@ public:
 	void Destroy()
 	{
 		TextureManager::CleanUpTexturePair(sprite.tsp_id);
+		destroyed();
 		delete this;
 	}
 
-	void tick()
+	void checkSceneValid()
 	{
-		if (!active) return;
-		if(parent_level == nullptr)
+		if (parent_level == nullptr)
 		{
 			printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
 			__debugbreak();
 			return;
 		}
+	}
+
+	void draw()
+	{
+		if (drawMode == DrawMode::DontDraw) return;
+		sprite.s.setPosition(position);
+		sprite.s.setRotation(rotation);
+		sprite.s.setScale(scale);
+		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
+	}
+
+	void forceDraw()
+	{
+		sprite.s.setPosition(position);
+		sprite.s.setRotation(rotation);
+		sprite.s.setScale(scale);
+		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
+	}
+
+	void tick()
+	{
+		if (!active) return;
+		
 		switch (this->flags)
 		{
 		case SimulateAlways:
-			if (draw && &sprite.s != nullptr)
-			{
+				checkSceneValid();
 				updatePhysics();
-				sprite.s.setPosition(position);
-				sprite.s.setRotation(rotation);
-				sprite.s.setScale(scale);
-				S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
-			}
+				update();
 				
-			update();
 			break;
 
 		case SimulateOnlyWhenLevelActive:
-			if (parent_level->name != LevelManager::ActiveLevel->name) return;
-			if (draw && &sprite.s != nullptr)
+			if (parent_level->name == LevelManager::ActiveLevel->name)
 			{
+				checkSceneValid();
 				updatePhysics();
-				sprite.s.setPosition(position);
-				sprite.s.setRotation(rotation);
-				sprite.s.setScale(scale);
-				S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
+				update();
 			}
+			break;
+		}
 
-			update();
+		switch (drawMode)
+		{
+		case DrawMode::DrawAlways:
+			if (&sprite.s != nullptr)
+			{
+				draw();
+			}
+			break;
+
+		case DrawMode::DrawWhenLevelActive:
+			if (parent_level->name == LevelManager::ActiveLevel->name)
+			{
+				if (&sprite.s != nullptr)
+				{
+					draw();
+				}
+			}
 			break;
 		}
 	}
@@ -461,7 +504,6 @@ public:
 	{
 		init_behavior;
 		name = "new Camera";
-		draw = false;
 		view = sf::View();
 	}
 
@@ -475,20 +517,53 @@ public:
 
 
 std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
+std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
-void UpdateGameObjects()
+
+
+
+
+class ClassUpdater
 {
-	for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
+public:
+	static void UpdateUpdatables()
 	{
-		if (GameObject::ActiveObjects[i] == nullptr)
+		for (size_t i = 0; i < Updatable::UpdatableObjects.size(); i++)
 		{
-			continue;
+			if (Updatable::UpdatableObjects[i] == nullptr)
+			{
+				continue;
+			}
+			Updatable::UpdatableObjects[i]->u_tick();
 		}
-		GameObject::ActiveObjects[i]->tick();
 	}
-}
+	
+	static void UpdateGameObjects()
+	{
+		for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
+		{
+			if (GameObject::ActiveObjects[i] == nullptr)
+			{
+				continue;
+			}
+			GameObject::ActiveObjects[i]->tick();
+		}
+	}
+};
 
+class UpdatableTest : public Updatable
+{
+public:
+	UpdatableTest()
+	{
+		init_updatable;
+	}
 
+	void update()
+	{
+		
+	}
+};
 
 class PhysicsTestObject : public GameObject
 {
@@ -514,6 +589,11 @@ public:
 
 		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\circle.png");
+	}
+
+	void onDestroyed()
+	{
+		printf("\nNOOOOOOOOOOOOoooooooo");
 	}
 
 	void update()
@@ -559,7 +639,7 @@ public:
 
 		if (isKeyPressedTap(Keyboard::Y))
 		{
-			draw = !draw;
+			
 		}
 	}
 };

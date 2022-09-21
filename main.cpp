@@ -16,6 +16,7 @@ int main()
 	Camera* cam = new Camera();
 	TestPlayer* test = new TestPlayer();
 	PhysicsTestObject* test2 = new PhysicsTestObject();
+	UpdatableTest* test3 = new UpdatableTest();
 	//test->parent_level = LevelManager::ActiveLevel;
 	//test2->parent_level = LevelManager::ActiveLevel;
 	//cam->parent_level = LevelManager::ActiveLevel;
@@ -77,8 +78,8 @@ int main()
 		}
 
 		time::update();
-		UpdateGameObjects();
-		
+		ClassUpdater::UpdateUpdatables();
+		ClassUpdater::UpdateGameObjects();
 		runtime->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
