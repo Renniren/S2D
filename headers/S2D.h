@@ -60,12 +60,18 @@ class Updatable
 public:
 	SimulationMode flags = SimulationMode::SimulateOnlyWhenLevelActive;
 
-	bool active;
+	bool u_active;
 	virtual void update() {}
+	virtual void post_update() {}
 	virtual void onDestroyed(){}
 	void u_tick()
 	{
-		if(active)update();
+		if(u_active)update();
+	}
+
+	void u_post_update()
+	{
+
 	}
 
 	void destroyed() { onDestroyed(); }
@@ -210,8 +216,6 @@ void clamp(int& num, int lower, int upper)
 	if (num > upper) num = upper;
 }
 
-
-
 bool isKeyPressedTap(sf::Keyboard::Key query)
 {
 	static bool res = false;
@@ -229,7 +233,6 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 	}
 	return false;
 }
-
 
 class time
 {
@@ -263,13 +266,13 @@ public:
 	}
 };
 
-float		time::Scale						= 1;
-float		time::delta						= 0, 
-			time::deltaUnscaled		= 0;
-sf::Int64	time::current				= 0,
-			time::last							= 0;
-sf::Time		time::_time				= sf::Time();
-sf::Clock	time::global_clock		= sf::Clock();
+float			time::Scale						= 1;
+float			time::delta						= 0, 
+				time::deltaUnscaled		= 0;
+sf::Int64	time::current			= 0,
+				time::last					= 0;
+sf::Time	time::_time				= sf::Time();
+sf::Clock	time::global_clock	= sf::Clock();
 
 //Created so that when a GameObject needs to be destroyed, we can also clean up the Sprite/Texture it also created.
 struct S2DTextureSpritePair
@@ -310,6 +313,7 @@ class TextureManager
 {
 public:
 	static std::vector<S2DTextureSpritePair> LoadedTextures;
+
 	static S2DTextureSpritePair CreateTexturePair(sf::Texture* tex, sf::Sprite* spr)
 	{
 		S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
@@ -369,7 +373,6 @@ public:
 	GameObjectSprite sprite;
 	std::string name;
 	
-
 	float mass = 1;
 	float drag = 0;
 	float gravityInfluence = 0.01f;
@@ -378,6 +381,7 @@ public:
 	bool isStatic = false;
 	bool hasPhysics = false;
 	bool respectsTime = true;
+	bool awaitingDestroy = false;
 
 	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
@@ -408,9 +412,7 @@ public:
 
 	void Destroy()
 	{
-		TextureManager::CleanUpTexturePair(sprite.tsp_id);
-		destroyed();
-		delete this;
+		awaitingDestroy = true;
 	}
 
 	void checkSceneValid()
@@ -484,6 +486,19 @@ public:
 		}
 	}
 
+	void after_tick()
+	{
+		if (awaitingDestroy)
+		{
+			TextureManager::CleanUpTexturePair(sprite.tsp_id);
+			active = false;
+			u_active = false;
+
+			destroyed();
+			delete this;
+		}
+	}
+
 	GameObject(bool setActive)
 	{
 		active = setActive;
@@ -509,19 +524,36 @@ public:
 
 	void update()
 	{
+		using namespace sf;
 		view.move(position);
 		view.rotate(rotation);
+
+		if (Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			position += Vector2f(-1, 0);
+		}
+
+		if (Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+
+		}
+
+		if (Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+
+		}
+
+		if (Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+
+		}
+
+
 	}
 };
 
-
-
 std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
-
-
-
-
 
 class ClassUpdater
 {
@@ -549,6 +581,20 @@ public:
 			GameObject::ActiveObjects[i]->tick();
 		}
 	}
+
+	static void PostUpdateGameObjects()
+	{
+		for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
+		{
+			if (GameObject::ActiveObjects[i] == nullptr)
+			{
+				continue;
+			}
+			GameObject::ActiveObjects[i]->after_tick();
+		}
+	}
+
+
 };
 
 class UpdatableTest : public Updatable
