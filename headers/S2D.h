@@ -187,8 +187,6 @@ public:
 	{
 		return dist(a, b) < rad1 || dist(b, a) < rad2;
 	}
-
-	
 };
 
 
@@ -198,7 +196,6 @@ void test()
 {
 	
 }
-
 
 S2DRuntime* S2DRuntime::Instance = nullptr;
 
@@ -412,7 +409,12 @@ public:
 
 	void Destroy()
 	{
-		awaitingDestroy = true;
+		active = false;
+		u_active = false;
+
+		destroyed();
+		TextureManager::CleanUpTexturePair(sprite.tsp_id);
+		delete this;
 	}
 
 	void checkSceneValid()
@@ -490,11 +492,11 @@ public:
 	{
 		if (awaitingDestroy)
 		{
-			TextureManager::CleanUpTexturePair(sprite.tsp_id);
 			active = false;
 			u_active = false;
 
 			destroyed();
+			TextureManager::CleanUpTexturePair(sprite.tsp_id);
 			delete this;
 		}
 	}
@@ -512,43 +514,31 @@ public:
 class Camera : public GameObject
 {
 public:
-	float zoom = 10;
+	float zoom = 1;
 	sf::View view;
+
+	void buildView()
+	{
+		sf::Vector2u rect = S2DRuntime::get()->GAME_WINDOW->getSize();
+		view = sf::View(position, (sf::Vector2f)rect);
+		view.setRotation(rotation);
+		view.zoom(zoom);
+		S2DRuntime::get()->GAME_WINDOW->setView(view);
+	}
 
 	Camera() : GameObject(true)
 	{
 		init_behavior;
+		drawMode = DrawMode::DontDraw;
+
 		name = "new Camera";
-		view = sf::View();
+		buildView();
 	}
+	
 
 	void update()
 	{
 		using namespace sf;
-		view.move(position);
-		view.rotate(rotation);
-
-		if (Keyboard::isKeyPressed(sf::Keyboard::Left))
-		{
-			position += Vector2f(-1, 0);
-		}
-
-		if (Keyboard::isKeyPressed(sf::Keyboard::Right))
-		{
-
-		}
-
-		if (Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-
-		}
-
-		if (Keyboard::isKeyPressed(sf::Keyboard::Down))
-		{
-
-		}
-
-
 	}
 };
 
