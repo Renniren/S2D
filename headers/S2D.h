@@ -31,6 +31,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #ifndef GUARD_S2D_MACROS
 #define GUARD_S2D_MACROS
 
+#define Instantiate(x) new x()
 #define init_behavior ActiveObjects.push_back(this)
 #define init_updatable UpdatableObjects.push_back(this)
 
@@ -71,7 +72,7 @@ public:
 
 	void u_post_update()
 	{
-
+		if (u_active)post_update();
 	}
 
 	void destroyed() { onDestroyed(); }
@@ -490,6 +491,8 @@ public:
 
 	void after_tick()
 	{
+		post_update();
+		/*
 		if (awaitingDestroy)
 		{
 			active = false;
@@ -499,6 +502,7 @@ public:
 			TextureManager::CleanUpTexturePair(sprite.tsp_id);
 			delete this;
 		}
+		*/
 	}
 
 	GameObject(bool setActive)
@@ -514,17 +518,22 @@ public:
 class Camera : public GameObject
 {
 public:
+	bool isMain;
 	float zoom = 1;
 	sf::View view;
 
 	void buildView()
 	{
-		sf::Vector2u rect = S2DRuntime::get()->GAME_WINDOW->getSize();
-		view = sf::View(position, (sf::Vector2f)rect);
-		view.setRotation(rotation);
-		view.zoom(zoom);
-		S2DRuntime::get()->GAME_WINDOW->setView(view);
+		if (isMain)
+		{
+			sf::Vector2u rect = S2DRuntime::get()->GAME_WINDOW->getSize();
+			view = sf::View(position, (sf::Vector2f)rect);
+			view.setRotation(rotation);
+			view.zoom(zoom);
+			S2DRuntime::get()->GAME_WINDOW->setView(view);
+		}
 	}
+
 
 	Camera() : GameObject(true)
 	{
@@ -539,6 +548,7 @@ public:
 	void update()
 	{
 		using namespace sf;
+		buildView();
 	}
 };
 
@@ -559,6 +569,20 @@ public:
 			Updatable::UpdatableObjects[i]->u_tick();
 		}
 	}
+
+	static void PostUpdateUpdatables()
+	{
+		for (size_t i = 0; i < Updatable::UpdatableObjects.size(); i++)
+		{
+			if (Updatable::UpdatableObjects[i] == nullptr)
+			{
+				continue;
+			}
+			Updatable::UpdatableObjects[i]->u_post_update();
+		}
+	}
+
+
 	
 	static void UpdateGameObjects()
 	{
@@ -599,6 +623,11 @@ public:
 	{
 		
 	}
+
+	void post_update()
+	{
+		std::cout << "\nfuck";
+	}
 };
 
 class PhysicsTestObject : public GameObject
@@ -624,7 +653,7 @@ public:
 		init_behavior;
 
 		scale = sf::Vector2f(0.03, 0.03);
-		sprite = TextureManager::CreateSprite("sprites\\circle.png");
+		sprite = TextureManager::CreateSprite("sprites\\square.png");
 	}
 
 	void onDestroyed()
@@ -632,9 +661,19 @@ public:
 		printf("\nNOOOOOOOOOOOOoooooooo");
 	}
 
+	void post_update()
+	{
+		using namespace sf;
+		RectangleShape bb = RectangleShape(scale);
+		bb.setFillColor(Color(0, 255, 0, 200));
+		bb.setPosition(position);
+		S2DRuntime::get()->GAME_WINDOW->draw(bb);
+	}
+
 	void update()
 	{
 		using namespace sf;
+		
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
 			position.y -= speed * time::deltaUnscaled;

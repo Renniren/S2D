@@ -14,9 +14,10 @@ int main()
 
 	S2DRuntime::Instance = runtime;
 	Camera* cam = new Camera();
-	TestPlayer* test = new TestPlayer();
-	PhysicsTestObject* test2 = new PhysicsTestObject();
-	UpdatableTest* test3 = new UpdatableTest();
+	cam->isMain = true;
+	TestPlayer* test = Instantiate(TestPlayer);
+	PhysicsTestObject* test2 = Instantiate(PhysicsTestObject);
+	UpdatableTest* test3 = Instantiate(UpdatableTest);
 	//test->parent_level = LevelManager::ActiveLevel;
 	//test2->parent_level = LevelManager::ActiveLevel;
 	//cam->parent_level = LevelManager::ActiveLevel;
@@ -80,9 +81,10 @@ int main()
 		time::update();
 		ClassUpdater::UpdateUpdatables();
 		ClassUpdater::UpdateGameObjects();
+		ClassUpdater::PostUpdateUpdatables();
+		ClassUpdater::PostUpdateGameObjects();
 		runtime->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
-		//ClassUpdater::PostUpdateGameObjects();
 	}
 
 
