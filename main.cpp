@@ -1,12 +1,15 @@
 #include "S2D.h"
+#include <time.h>       /* time */
+
 
 sf::Event event;
 int main()
 {
 	using namespace sf;
 	using namespace std;
-	S2DRuntime* runtime = new S2DRuntime();
+	srand(time(NULL));
 
+	S2DRuntime* runtime = new S2DRuntime();
 	RenderWindow window(VideoMode(800, 600), "window");
 	runtime->GAME_WINDOW = &window;
 	
@@ -18,6 +21,7 @@ int main()
 	TestPlayer* test = Instantiate(TestPlayer);
 	PhysicsTestObject* test2 = Instantiate(PhysicsTestObject);
 	UpdatableTest* test3 = Instantiate(UpdatableTest);
+	ParticleSystem* ps = Instantiate(ParticleSystem);
 	//test->parent_level = LevelManager::ActiveLevel;
 	//test2->parent_level = LevelManager::ActiveLevel;
 	//cam->parent_level = LevelManager::ActiveLevel;
@@ -81,8 +85,8 @@ int main()
 		time::update();
 		ClassUpdater::UpdateUpdatables();
 		ClassUpdater::UpdateGameObjects();
-		ClassUpdater::PostUpdateUpdatables();
-		ClassUpdater::PostUpdateGameObjects();
+		//ClassUpdater::PostUpdateUpdatables();
+		//ClassUpdater::PostUpdateGameObjects();
 		runtime->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}

@@ -5,6 +5,8 @@
 #include <vector>
 #include <stdlib.h>
 #include <iostream>
+#include <random>
+#include<functional>
 #include <SFML/Graphics.hpp>
 
 #ifndef GUARD_S2D_DEFINES
@@ -72,6 +74,8 @@ public:
 
 	void u_post_update()
 	{
+		if (this == nullptr) return;
+
 		if (u_active)post_update();
 	}
 
@@ -177,6 +181,20 @@ double dist(sf::Vector2f a, sf::Vector2f b)
 {
 	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
 }
+
+int random(int min, int max)
+{
+	std::random_device rseed;
+	std::mt19937 rng(rseed());
+	std::uniform_int_distribution<int> dist(min, max);
+	return dist(rng);
+}
+
+float random(float Min, float Max)
+{
+	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
+}
+
 
 class Physics
 {
@@ -491,6 +509,8 @@ public:
 
 	void after_tick()
 	{
+		if (this == nullptr) return;
+		
 		post_update();
 		/*
 		if (awaitingDestroy)
@@ -505,13 +525,21 @@ public:
 		*/
 	}
 
-	GameObject(bool setActive)
+	GameObject(bool setActive = true)
 	{
 		active = setActive;
 		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
 		position = sf::Vector2f(0, 0);
 		name = "new WorldObject";
+	}
+
+
+
+
+	void MakeStandalone()
+	{
+		init_behavior;
 	}
 };
 
@@ -549,6 +577,105 @@ public:
 	{
 		using namespace sf;
 		buildView();
+	}
+};
+
+class Particle : public GameObject
+{
+	float p;
+public:
+	float lifetime;
+
+	Particle(float l) : GameObject(true)
+	{
+		init_behavior;
+		l = lifetime;
+	}
+
+	void update()
+	{
+		std::cout << "fuck" << std::endl;
+		p += time::delta;
+		if (p >= lifetime)
+		{
+			p = 0;
+			Destroy();
+		}
+	}
+};
+
+class ParticleSystem : public GameObject
+{
+private:
+	float d;
+public:
+	bool emitting;
+	int maxParticles;
+	float duration;
+	float speed = 2;
+	float delay = 0.2f;
+	float lifetime = 1;
+	GameObjectSprite sprite;
+	std::vector<Particle*> particles = std::vector<Particle*>();
+
+	ParticleSystem() : GameObject(true)
+	{
+		init_behavior;
+		sprite = TextureManager::CreateSprite("sprites\\square.png");
+		maxParticles = 34;
+	}
+
+	void emit(int amt = 1)
+	{
+		if (amt == 1)
+		{
+			Particle* particle = new Particle(lifetime);
+			particle->position = position;
+
+			particle->velocity += sf::Vector2f(random(-speed, speed),
+				random(-speed, speed));
+			particle->active = true;
+			particle->hasPhysics = true;
+			particle->sprite = sprite;
+			particle->scale = sf::Vector2f(0.02f, 0.02f);
+			particle->drawMode = DrawWhenLevelActive;
+			particles.push_back(particle);
+		}
+		else if (amt > 1)
+		{
+			for (size_t i = 0; i < amt; i++)
+			{
+				Particle* particle = new Particle(lifetime);
+				particle->position = position;
+
+				particle->velocity += sf::Vector2f(random(-speed, speed),
+					random(-speed, speed));
+				particle->active = true;
+				particle->hasPhysics = true;
+				particle->sprite = sprite;
+				particle->scale = sf::Vector2f(0.02f, 0.02f);
+				particle->drawMode = DrawWhenLevelActive;
+				particles.push_back(particle);
+			}
+		}
+	}
+
+	void update()
+	{
+		if (emitting)
+		{
+			d += time::delta;
+			if (d >= delay)
+			{
+				emit();
+				d = 0;
+			}
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
+		{
+			emit(20);
+		}
 	}
 };
 
@@ -626,7 +753,7 @@ public:
 
 	void post_update()
 	{
-		std::cout << "\nfuck";
+		//std::cout << "\nfuck";
 	}
 };
 
