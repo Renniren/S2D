@@ -33,6 +33,10 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #ifndef GUARD_S2D_MACROS
 #define GUARD_S2D_MACROS
 
+//Macros for static class member definitons. Unnecessary, but sometimes convenient.
+#define MStaticDefinition(type, cls, name) type cls::name = type()
+#define MStaticPointerDefinition(type, cls) type cls::type = new type()
+
 #define Instantiate(x) new x()
 #define init_behavior ActiveObjects.push_back(this)
 #define init_updatable UpdatableObjects.push_back(this)
@@ -257,7 +261,7 @@ class time
 	static sf::Int64 last, current;
 
 public:
-	static float delta, deltaUnscaled;
+	static float delta, deltaUnscaled, physDelta;
 	static float Scale;
 
 	static void init()
@@ -274,8 +278,8 @@ public:
 		delta = current - last;
 		deltaUnscaled = delta;
 
-		delta /= 10;
-		deltaUnscaled /= 10;
+		delta /= 1000;
+		deltaUnscaled /= 1000;
 
 		delta *= Scale;
 		last = current;
@@ -283,7 +287,8 @@ public:
 };
 
 float			time::Scale						= 1;
-float			time::delta						= 0, 
+float			time::delta						= 0,
+				time::physDelta				= 0.02f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
 				time::last					= 0;
@@ -324,6 +329,8 @@ public:
 		this->s = s;
 	}
 };
+
+
 
 class TextureManager
 {
@@ -379,7 +386,19 @@ public:
 	}
 };
 
-std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
+//std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
+
+MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
+
+
+
+class DestroyHandler
+{
+	
+
+};
+
+
 
 class GameObject : public Updatable
 {
@@ -391,7 +410,7 @@ public:
 	
 	float mass = 1;
 	float drag = 0;
-	float gravityInfluence = 0.01f;
+	float gravityInfluence = 1;
 
 	bool active;
 	bool isStatic = false;
@@ -406,6 +425,53 @@ public:
 	float rotation;
 	static std::vector<GameObject*> ActiveObjects;
 
+	struct DestroyRequest
+	{
+	public:
+		GameObject* des;
+		bool destroyed;
+
+		DestroyRequest(GameObject* g)
+		{
+			this->des = g;
+		}
+	};
+
+	static std::vector<DestroyRequest> DestroyRequests;
+
+	static void RebuildDestroyRequestList()
+	{
+		std::vector<DestroyRequest> old = std::vector< DestroyRequest>(DestroyRequests);
+		std::vector<DestroyRequest> _new = std::vector< DestroyRequest>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (!old[i].destroyed)
+			{
+				_new.push_back(old[i]);
+			}
+		}
+
+		DestroyRequests = _new;
+	}
+
+	static void MakeDestroyRequest(GameObject* g)
+	{
+		DestroyRequests.push_back(DestroyRequest(g));
+	}
+
+	static void ManageDestroyRequests()
+	{
+		for (size_t i = 0; i < DestroyRequests.size(); i++)
+		{
+			if (DestroyRequests[i].des != nullptr)
+			{
+				DestroyRequests[i].des->DestroyImmediate();
+				DestroyRequests[i].destroyed = true;
+			}
+		}
+		RebuildDestroyRequestList();
+	}
+
 	void levelChanged()
 	{
 
@@ -416,22 +482,28 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += Physics::Gravity * gravityInfluence * time::delta;
-			position += velocity * time::delta;
+			velocity += Physics::Gravity * gravityInfluence * time::delta * time::Scale;
+			position += velocity * time::delta * time::Scale;
 		}
 		else
 		{
-			velocity -= Physics::Gravity * gravityInfluence * time::deltaUnscaled;
-			position += velocity * time::deltaUnscaled;
+			velocity -= Physics::Gravity * gravityInfluence * time::delta;
+			position += velocity * time::delta;
 		}
 	}
 
-	void Destroy()
+	void RequestDestroy()
+	{
+		MakeDestroyRequest(this);
+		awaitingDestroy = true;
+		destroyed();
+	}
+
+	void DestroyImmediate()
 	{
 		active = false;
 		u_active = false;
-
-		destroyed();
+		
 		TextureManager::CleanUpTexturePair(sprite.tsp_id);
 		delete this;
 	}
@@ -440,7 +512,7 @@ public:
 	{
 		if (parent_level == nullptr)
 		{
-			printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
+			//printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
 			__debugbreak();
 			return;
 		}
@@ -543,6 +615,8 @@ public:
 	}
 };
 
+MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
+
 class Camera : public GameObject
 {
 public:
@@ -599,7 +673,7 @@ public:
 		if (p >= lifetime)
 		{
 			p = 0;
-			Destroy();
+			//RequestDestroy();
 		}
 	}
 };
@@ -614,7 +688,7 @@ public:
 	float duration;
 	float speed = 2;
 	float delay = 0.2f;
-	float lifetime = 1;
+	float lifetime = 5;
 	GameObjectSprite sprite;
 	std::vector<Particle*> particles = std::vector<Particle*>();
 
@@ -682,9 +756,12 @@ public:
 std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
+
+
 class ClassUpdater
 {
 public:
+
 	static void UpdateUpdatables()
 	{
 		for (size_t i = 0; i < Updatable::UpdatableObjects.size(); i++)
@@ -709,7 +786,22 @@ public:
 		}
 	}
 
+	static void RebuildGameObjectList()
+	{
+		std::vector<GameObject*> old = GameObject::ActiveObjects;
+		std::vector<GameObject*> _new = std::vector<GameObject*>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (old[i] == nullptr) continue;
 
+			if (!old[i]->awaitingDestroy)
+			{
+				_new.push_back(old[i]);
+			}
+		}
+
+		GameObject::ActiveObjects = _new;
+	}
 	
 	static void UpdateGameObjects()
 	{
@@ -734,9 +826,9 @@ public:
 			GameObject::ActiveObjects[i]->after_tick();
 		}
 	}
-
-
 };
+
+
 
 class UpdatableTest : public Updatable
 {
@@ -823,7 +915,7 @@ public:
 		if (Keyboard::isKeyPressed(Keyboard::X))
 		{
 			printf("test");
-			Destroy();
+			RequestDestroy();
 		}
 
 

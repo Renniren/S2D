@@ -22,6 +22,7 @@ int main()
 	PhysicsTestObject* test2 = Instantiate(PhysicsTestObject);
 	UpdatableTest* test3 = Instantiate(UpdatableTest);
 	ParticleSystem* ps = Instantiate(ParticleSystem);
+	ps->emitting = true;
 	//test->parent_level = LevelManager::ActiveLevel;
 	//test2->parent_level = LevelManager::ActiveLevel;
 	//cam->parent_level = LevelManager::ActiveLevel;
@@ -48,6 +49,7 @@ int main()
 	#ifndef S2D_DEBUG
 			GAME_WINDOW->setTitle(game_name);
 	#endif*/
+		GameObject::ManageDestroyRequests();
 
 		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 
@@ -69,7 +71,7 @@ int main()
 
 				for (size_t i = 0; i < plys.size(); i++)
 				{
-					plys[i]->Destroy();
+					plys[i]->RequestDestroy();
 				}
 				TextureManager::RegenerateLoadedTextureList();
 				d = true;
@@ -83,8 +85,10 @@ int main()
 		}
 
 		time::update();
+		ClassUpdater::RebuildGameObjectList();
 		ClassUpdater::UpdateUpdatables();
 		ClassUpdater::UpdateGameObjects();
+		ClassUpdater::RebuildGameObjectList();
 		//ClassUpdater::PostUpdateUpdatables();
 		//ClassUpdater::PostUpdateGameObjects();
 		runtime->GAME_WINDOW->display();
