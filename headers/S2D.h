@@ -7,7 +7,6 @@
 #include <iostream>
 #include <random>
 #include<functional>
-#include <box2d/box2d.h>
 #include <SFML/Graphics.hpp>
 
 #ifndef GUARD_S2D_DEFINES
@@ -34,6 +33,10 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #ifndef GUARD_S2D_MACROS
 #define GUARD_S2D_MACROS
 
+//Macros for static class member definitons. Unnecessary, but sometimes convenient.
+#define MStaticDefinition(type, cls, name) type cls::name = type()
+#define MStaticPointerDefinition(type, cls) type cls::type = new type()
+
 #define Instantiate(x) new x()
 #define init_behavior ActiveObjects.push_back(this)
 #define init_updatable UpdatableObjects.push_back(this)
@@ -47,38 +50,6 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 
 enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
 enum DrawMode { DrawWhenLevelActive, DrawAlways, DontDraw };
-
-
-//Intermediary/Standard Vector2 struct to avoid confusion between SFML and b2d Vector2 types
-
-struct Vector2Int
-{
-public:
-	int x, y;
-	
-	Vector2Int()
-	{
-		this->x = 0;
-		this->y = 0;
-	}
-
-
-	Vector2Int(int x, int y)
-	{
-		this->x = x;
-		this->y = y;
-	}
-
-	operator sf::Vector2i()
-	{
-		return sf::Vector2i(this->x, this->y);
-	}
-
-	operator b2Vec2()
-	{
-		return b2Vec2(this->x, this->y);
-	}
-};
 
 class object
 {
@@ -135,26 +106,6 @@ public:
 	}
 };
 
-double dist(sf::Vector2f a, sf::Vector2f b)
-{
-	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
-}
-
-class Physics
-{
-public:
-	static Vector2 Gravity;
-	enum collisionShape { Box, Circle, Triangle, None };
-
-	bool CheckCirclevsCircle(sf::Vector2f a, sf::Vector2f b, float rad1, float rad2)
-	{
-		return dist(a, b) < rad1 || dist(b, a) < rad2;
-	}
-};
-
-
-Vector2 Physics::Gravity = Vector2(0, 9.81f);
-
 class Level
 {
 public:
@@ -166,18 +117,6 @@ public:
 	{
 		this->name = name;
 		this->world_settings = settings;
-	}
-};
-
-class LevelInstance
-{
-public:
-	Level* instanceOf;
-	b2World* physicsWorld = nullptr;
-	LevelInstance(Level* levelToInstance)
-	{
-		this->instanceOf = levelToInstance;
-		physicsWorld = new b2World(Physics::Gravity);
 	}
 };
 
@@ -242,7 +181,10 @@ public:
 Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
 Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
 
-
+double dist(sf::Vector2f a, sf::Vector2f b)
+{
+	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
+}
 
 int random(int min, int max)
 {
@@ -258,7 +200,20 @@ float random(float Min, float Max)
 }
 
 
+class Physics
+{
+public:
+	static sf::Vector2f Gravity;
+	enum collisionShape { Box, Circle, Triangle, None };
 
+	bool CheckCirclevsCircle(sf::Vector2f a, sf::Vector2f b, float rad1, float rad2)
+	{
+		return dist(a, b) < rad1 || dist(b, a) < rad2;
+	}
+};
+
+
+sf::Vector2f Physics::Gravity = sf::Vector2f(0, 9.81f);
 
 void test()
 {
@@ -301,13 +256,12 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 
 class time
 {
-
-public:
 	static sf::Clock global_clock;
 	static sf::Time _time;
 	static sf::Int64 last, current;
 
-	static float delta, deltaUnscaled, physicsDelta;
+public:
+	static float delta, deltaUnscaled, physDelta;
 	static float Scale;
 
 	static void init()
@@ -333,8 +287,8 @@ public:
 };
 
 float			time::Scale						= 1;
-float			time::delta						= 0, 
-				time::physicsDelta			= 0.02f, 
+float			time::delta						= 0,
+				time::physDelta				= 0.02f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
 				time::last					= 0;
@@ -375,6 +329,8 @@ public:
 		this->s = s;
 	}
 };
+
+
 
 class TextureManager
 {
@@ -430,19 +386,31 @@ public:
 	}
 };
 
-std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
+//std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
+
+MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
+
+
+
+class DestroyHandler
+{
+	
+
+};
+
+
 
 class GameObject : public Updatable
 {
 public:
-	Vector2 position, scale;
+	sf::Vector2f position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
 	std::string name;
 	
 	float mass = 1;
 	float drag = 0;
-	float gravityInfluence = 1.f;
+	float gravityInfluence = 1;
 
 	bool active;
 	bool isStatic = false;
@@ -450,13 +418,59 @@ public:
 	bool respectsTime = true;
 	bool awaitingDestroy = false;
 
-	b2Body* body;
 	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
-	Vector2 velocity;
+	sf::Vector2f velocity;
 	
 	float rotation;
 	static std::vector<GameObject*> ActiveObjects;
+
+	struct DestroyRequest
+	{
+	public:
+		GameObject* des;
+		bool destroyed;
+
+		DestroyRequest(GameObject* g)
+		{
+			this->des = g;
+		}
+	};
+
+	static std::vector<DestroyRequest> DestroyRequests;
+
+	static void RebuildDestroyRequestList()
+	{
+		std::vector<DestroyRequest> old = std::vector< DestroyRequest>(DestroyRequests);
+		std::vector<DestroyRequest> _new = std::vector< DestroyRequest>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (!old[i].destroyed)
+			{
+				_new.push_back(old[i]);
+			}
+		}
+
+		DestroyRequests = _new;
+	}
+
+	static void MakeDestroyRequest(GameObject* g)
+	{
+		DestroyRequests.push_back(DestroyRequest(g));
+	}
+
+	static void ManageDestroyRequests()
+	{
+		for (size_t i = 0; i < DestroyRequests.size(); i++)
+		{
+			if (DestroyRequests[i].des != nullptr)
+			{
+				DestroyRequests[i].des->DestroyImmediate();
+				DestroyRequests[i].destroyed = true;
+			}
+		}
+		RebuildDestroyRequestList();
+	}
 
 	void levelChanged()
 	{
@@ -468,22 +482,28 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
-			position += velocity * time::physicsDelta * time::Scale;
+			velocity += Physics::Gravity * gravityInfluence * time::delta * time::Scale;
+			position += velocity * time::delta * time::Scale;
 		}
 		else
 		{
-			velocity -= Physics::Gravity * gravityInfluence * time::physicsDelta;
-			position += velocity * time::physicsDelta;
+			velocity -= Physics::Gravity * gravityInfluence * time::delta;
+			position += velocity * time::delta;
 		}
 	}
 
-	void Destroy()
+	void RequestDestroy()
+	{
+		MakeDestroyRequest(this);
+		awaitingDestroy = true;
+		destroyed();
+	}
+
+	void DestroyImmediate()
 	{
 		active = false;
 		u_active = false;
-
-		destroyed();
+		
 		TextureManager::CleanUpTexturePair(sprite.tsp_id);
 		delete this;
 	}
@@ -492,7 +512,7 @@ public:
 	{
 		if (parent_level == nullptr)
 		{
-			printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
+			//printf((std::string("\nGameObject \"").append(name).append("\" has no parent Scene!")).c_str());
 			__debugbreak();
 			return;
 		}
@@ -579,10 +599,10 @@ public:
 
 	GameObject(bool setActive = true)
 	{
-		
 		active = setActive;
 		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
+		position = sf::Vector2f(0, 0);
 		name = "new WorldObject";
 	}
 
@@ -594,6 +614,8 @@ public:
 		init_behavior;
 	}
 };
+
+MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
 
 class Camera : public GameObject
 {
@@ -646,12 +668,12 @@ public:
 
 	void update()
 	{
+		std::cout << "fuck" << std::endl;
 		p += time::delta;
 		if (p >= lifetime)
 		{
 			p = 0;
-			//std::cout << "fuck" << std::endl;
-			//Destroy();
+			//RequestDestroy();
 		}
 	}
 };
@@ -664,9 +686,9 @@ public:
 	bool emitting;
 	int maxParticles;
 	float duration;
-	float speed = 20;
+	float speed = 2;
 	float delay = 0.2f;
-	float lifetime = 1;
+	float lifetime = 5;
 	GameObjectSprite sprite;
 	std::vector<Particle*> particles = std::vector<Particle*>();
 
@@ -682,14 +704,14 @@ public:
 		if (amt == 1)
 		{
 			Particle* particle = new Particle(lifetime);
-			particle->position = this->position;
+			particle->position = position;
 
-			particle->velocity += Vector2(random(-speed, speed),
+			particle->velocity += sf::Vector2f(random(-speed, speed),
 				random(-speed, speed));
 			particle->active = true;
 			particle->hasPhysics = true;
 			particle->sprite = sprite;
-			particle->scale = Vector2(0.02f, 0.02f);
+			particle->scale = sf::Vector2f(0.02f, 0.02f);
 			particle->drawMode = DrawWhenLevelActive;
 			particles.push_back(particle);
 		}
@@ -698,14 +720,14 @@ public:
 			for (size_t i = 0; i < amt; i++)
 			{
 				Particle* particle = new Particle(lifetime);
-				particle->position = this->position;
+				particle->position = position;
 
-				particle->velocity += Vector2(random(-speed, speed),
+				particle->velocity += sf::Vector2f(random(-speed, speed),
 					random(-speed, speed));
 				particle->active = true;
 				particle->hasPhysics = true;
 				particle->sprite = sprite;
-				particle->scale = Vector2(0.02f, 0.02f);
+				particle->scale = sf::Vector2f(0.02f, 0.02f);
 				particle->drawMode = DrawWhenLevelActive;
 				particles.push_back(particle);
 			}
@@ -714,7 +736,6 @@ public:
 
 	void update()
 	{
-		using namespace sf;
 		if (emitting)
 		{
 			d += time::delta;
@@ -723,25 +744,6 @@ public:
 				emit();
 				d = 0;
 			}
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Up))
-		{
-			position.y -= speed * time::deltaUnscaled;
-		}
-		if (Keyboard::isKeyPressed(Keyboard::Down))
-		{
-			position.y += speed * time::deltaUnscaled;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Right))
-		{
-			position.x += speed * time::deltaUnscaled;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Left))
-		{
-			position.x -= speed * time::delta;
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
@@ -754,9 +756,12 @@ public:
 std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
+
+
 class ClassUpdater
 {
 public:
+
 	static void UpdateUpdatables()
 	{
 		for (size_t i = 0; i < Updatable::UpdatableObjects.size(); i++)
@@ -781,7 +786,22 @@ public:
 		}
 	}
 
+	static void RebuildGameObjectList()
+	{
+		std::vector<GameObject*> old = GameObject::ActiveObjects;
+		std::vector<GameObject*> _new = std::vector<GameObject*>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (old[i] == nullptr) continue;
 
+			if (!old[i]->awaitingDestroy)
+			{
+				_new.push_back(old[i]);
+			}
+		}
+
+		GameObject::ActiveObjects = _new;
+	}
 	
 	static void UpdateGameObjects()
 	{
@@ -806,9 +826,9 @@ public:
 			GameObject::ActiveObjects[i]->after_tick();
 		}
 	}
-
-
 };
+
+
 
 class UpdatableTest : public Updatable
 {
@@ -836,8 +856,8 @@ public:
 	{
 		init_behavior;
 		hasPhysics = true;
-		position = Vector2(1, 4);
-		scale = Vector2(0.03, 0.03);
+		position = sf::Vector2f(1, 4);
+		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
 };
@@ -851,7 +871,7 @@ public:
 	{
 		init_behavior;
 
-		scale = Vector2(0.03, 0.03);
+		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\square.png");
 	}
 
@@ -895,7 +915,7 @@ public:
 		if (Keyboard::isKeyPressed(Keyboard::X))
 		{
 			printf("test");
-			Destroy();
+			RequestDestroy();
 		}
 
 

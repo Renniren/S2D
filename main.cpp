@@ -1,6 +1,6 @@
 #include "S2D.h"
-#include <time.h>
-#include <sys/types.h>
+#include <time.h>       /* time */
+
 
 sf::Event event;
 int main()
@@ -40,7 +40,6 @@ int main()
 	vector<TestPlayer*> plys = vector<TestPlayer*>();
 	bool d;
 	printf("init");
-	float n = 0;
 	while(runtime->GAME_WINDOW->isOpen())
 	{
 
@@ -50,13 +49,8 @@ int main()
 	#ifndef S2D_DEBUG
 			GAME_WINDOW->setTitle(game_name);
 	#endif*/
-		n += time::delta;
-		if (n >= 1)
-		{
-			cout << "1 second has passed" << endl;
-			cout << time::delta << endl;
-			n = 0;
-		}
+		GameObject::ManageDestroyRequests();
+
 		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 
 		while (runtime->GAME_WINDOW->pollEvent(event))
@@ -77,7 +71,7 @@ int main()
 
 				for (size_t i = 0; i < plys.size(); i++)
 				{
-					plys[i]->Destroy();
+					plys[i]->RequestDestroy();
 				}
 				TextureManager::RegenerateLoadedTextureList();
 				d = true;
@@ -91,8 +85,10 @@ int main()
 		}
 
 		time::update();
+		ClassUpdater::RebuildGameObjectList();
 		ClassUpdater::UpdateUpdatables();
 		ClassUpdater::UpdateGameObjects();
+		ClassUpdater::RebuildGameObjectList();
 		//ClassUpdater::PostUpdateUpdatables();
 		//ClassUpdater::PostUpdateGameObjects();
 		runtime->GAME_WINDOW->display();
