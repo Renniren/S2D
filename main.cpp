@@ -1,6 +1,6 @@
 #include "S2D.h"
-#include <time.h>       /* time */
-
+#include <time.h>
+#include <sys/types.h>
 
 sf::Event event;
 int main()
@@ -22,6 +22,7 @@ int main()
 	PhysicsTestObject* test2 = Instantiate(PhysicsTestObject);
 	UpdatableTest* test3 = Instantiate(UpdatableTest);
 	ParticleSystem* ps = Instantiate(ParticleSystem);
+	ps->emitting = true;
 	//test->parent_level = LevelManager::ActiveLevel;
 	//test2->parent_level = LevelManager::ActiveLevel;
 	//cam->parent_level = LevelManager::ActiveLevel;
@@ -39,6 +40,7 @@ int main()
 	vector<TestPlayer*> plys = vector<TestPlayer*>();
 	bool d;
 	printf("init");
+	float n = 0;
 	while(runtime->GAME_WINDOW->isOpen())
 	{
 
@@ -48,7 +50,13 @@ int main()
 	#ifndef S2D_DEBUG
 			GAME_WINDOW->setTitle(game_name);
 	#endif*/
-
+		n += time::delta;
+		if (n >= 1)
+		{
+			cout << "1 second has passed" << endl;
+			cout << time::delta << endl;
+			n = 0;
+		}
 		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 
 		while (runtime->GAME_WINDOW->pollEvent(event))
