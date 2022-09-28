@@ -89,8 +89,8 @@ int main()
 		ClassUpdater::UpdateUpdatables();
 		ClassUpdater::UpdateGameObjects();
 		ClassUpdater::RebuildGameObjectList();
-		//ClassUpdater::PostUpdateUpdatables();
-		//ClassUpdater::PostUpdateGameObjects();
+		ClassUpdater::PostUpdateUpdatables();
+		ClassUpdater::PostUpdateGameObjects();
 		runtime->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}

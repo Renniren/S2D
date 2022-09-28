@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include<box2d.h>
 #include <stdlib.h>
 #include <iostream>
 #include <random>
@@ -48,6 +49,36 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 
 #endif
 
+double dist(sf::Vector2f a, sf::Vector2f b)
+{
+	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
+}
+
+int random(int min, int max)
+{
+	std::random_device rseed;
+	std::mt19937 rng(rseed());
+	std::uniform_int_distribution<int> dist(min, max);
+	return dist(rng);
+}
+
+void clamp(float& num, float&& lower, float&& upper)
+{
+	if (num < lower) num = lower;
+	if (num > upper) num = upper;
+}
+
+void clamp(int& num, int lower, int upper)
+{
+	if (num < lower) num = lower;
+	if (num > upper) num = upper;
+}
+
+float random(float Min, float Max)
+{
+	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
+}
+
 enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
 enum DrawMode { DrawWhenLevelActive, DrawAlways, DontDraw };
 
@@ -59,6 +90,101 @@ public:
 	virtual std::string to_string()
 	{
 		return "";
+	}
+};
+
+struct Vector2
+{
+public:
+	float x, y;
+
+	Vector2()
+	{
+		this->x = 0;
+		this->y = 0;
+	}
+
+
+	Vector2(float x, float y)
+	{
+		this->x = x;
+		this->y = y;
+	}
+
+	Vector2(const Vector2& d)
+	{
+		this->x = d.x;
+		this->y = d.y;
+	}
+
+	inline Vector2 operator * (float n)
+	{
+		Vector2 r = Vector2(*this);
+		r.x *= n;
+		r.y *= n;
+		return r;
+	}
+
+	inline Vector2 operator = (Vector2 n)
+	{
+		Vector2 fuckoff = Vector2(*this);
+		fuckoff.x = n.x;
+		fuckoff.y = n.y;
+		return fuckoff;
+	}
+
+	inline Vector2 operator *= (float n)
+	{
+		Vector2 r = Vector2(*this);
+		r.x *= n;
+		r.y *= n;
+		return r;
+	}
+
+	inline Vector2 operator += (Vector2 other)
+	{
+		Vector2 r = Vector2(*this);
+		r.x += other.x;
+		r.y += other.y;
+		return r;
+	}
+
+	inline Vector2 operator -= (Vector2 other)
+	{
+		Vector2 r = Vector2(*this);
+		r.x -= other.x;
+		r.y -= other.y;
+		return r;
+	}
+	
+	//Operators defined for compatibility
+
+	inline Vector2 operator += (sf::Vector2f other)
+	{
+		Vector2 r = Vector2(*this);
+		r.x += other.x;
+		r.y += other.y;
+		return r;
+	}
+
+	inline Vector2 operator -= (sf::Vector2f other)
+	{
+		Vector2 r = Vector2(*this);
+		r.x -= other.x;
+		r.y -= other.y;
+		return r;
+	}
+
+
+
+	inline operator sf::Vector2f()
+	{
+		return sf::Vector2f(this->x, this->y);
+	}
+
+	inline operator b2Vec2()
+	{
+		return b2Vec2(this->x, this->y);
 	}
 };
 
@@ -86,6 +212,18 @@ public:
 	void destroyed() { onDestroyed(); }
 
 	static std::vector<Updatable*> UpdatableObjects;
+};
+
+class Physics
+{
+public:
+	static Vector2 Gravity;
+	enum collisionShape { Box, Circle, Triangle, None };
+
+	bool CheckCirclevsCircle(sf::Vector2f a, sf::Vector2f b, float rad1, float rad2)
+	{
+		return dist(a, b) < rad1 || dist(b, a) < rad2;
+	}
 };
 
 class World
@@ -117,6 +255,18 @@ public:
 	{
 		this->name = name;
 		this->world_settings = settings;
+	}
+};
+
+class LevelInstance
+{
+public:
+	Level* instanceOf;
+	b2World* physicsWorld = nullptr;
+	LevelInstance(Level* levelToInstance)
+	{
+		this->instanceOf = levelToInstance;
+		physicsWorld = new b2World(Physics::Gravity);
 	}
 };
 
@@ -181,60 +331,12 @@ public:
 Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
 Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
 
-double dist(sf::Vector2f a, sf::Vector2f b)
-{
-	return sqrt((double)(pow(b.x - a.x, 2) + pow(b.y - a.y, 2)));
-}
-
-int random(int min, int max)
-{
-	std::random_device rseed;
-	std::mt19937 rng(rseed());
-	std::uniform_int_distribution<int> dist(min, max);
-	return dist(rng);
-}
-
-float random(float Min, float Max)
-{
-	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
-}
-
-
-class Physics
-{
-public:
-	static sf::Vector2f Gravity;
-	enum collisionShape { Box, Circle, Triangle, None };
-
-	bool CheckCirclevsCircle(sf::Vector2f a, sf::Vector2f b, float rad1, float rad2)
-	{
-		return dist(a, b) < rad1 || dist(b, a) < rad2;
-	}
-};
-
-
-sf::Vector2f Physics::Gravity = sf::Vector2f(0, 9.81f);
-
-void test()
-{
-	
-}
+Vector2 Physics::Gravity = Vector2(0, 9.81f);
+//sf::Vector2f Physics::Gravity = sf::Vector2f(0, 9.81f);
 
 S2DRuntime* S2DRuntime::Instance = nullptr;
 
 bool doClear = true;
-
-void clamp(float& num, float&& lower, float&& upper)
-{
-	if (num < lower) num = lower;
-	if (num > upper) num = upper;
-}
-
-void clamp(int& num, int lower, int upper)
-{
-	if (num < lower) num = lower;
-	if (num > upper) num = upper;
-}
 
 bool isKeyPressedTap(sf::Keyboard::Key query)
 {
@@ -261,7 +363,7 @@ class time
 	static sf::Int64 last, current;
 
 public:
-	static float delta, deltaUnscaled, physDelta;
+	static float delta, deltaUnscaled, physicsDelta;
 	static float Scale;
 
 	static void init()
@@ -288,7 +390,7 @@ public:
 
 float			time::Scale						= 1;
 float			time::delta						= 0,
-				time::physDelta				= 0.02f,
+				time::physicsDelta				= 0.02f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
 				time::last					= 0;
@@ -390,16 +492,6 @@ public:
 
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
 
-
-
-class DestroyHandler
-{
-	
-
-};
-
-
-
 class GameObject : public Updatable
 {
 public:
@@ -482,15 +574,26 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += Physics::Gravity * gravityInfluence * time::delta * time::Scale;
-			position += velocity * time::delta * time::Scale;
+			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
+			position += velocity * time::physicsDelta * time::Scale;
 		}
 		else
 		{
-			velocity -= Physics::Gravity * gravityInfluence * time::delta;
-			position += velocity * time::delta;
+			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta;
+			position += velocity * time::physicsDelta;
 		}
 	}
+
+	/*
+		GameObjects that want to be destroyed must a request to be destroyed, which is then handled at the very start of 
+		the game loop. 
+		This cannot simply be handled within an Update loop as code that runs on a GameObject that's meant
+		to have been destroyed will likely cause an access violation.
+		This also could not have been done within Post Update as sending the OnDestroy event led to another access violation.
+
+		Then, the Class Updater will flush destroyed/null GameObjects from the list of active GameObjects to further prevent this
+		from happening.
+	*/
 
 	void RequestDestroy()
 	{
@@ -584,17 +687,6 @@ public:
 		if (this == nullptr) return;
 		
 		post_update();
-		/*
-		if (awaitingDestroy)
-		{
-			active = false;
-			u_active = false;
-
-			destroyed();
-			TextureManager::CleanUpTexturePair(sprite.tsp_id);
-			delete this;
-		}
-		*/
 	}
 
 	GameObject(bool setActive = true)
@@ -668,7 +760,7 @@ public:
 
 	void update()
 	{
-		std::cout << "fuck" << std::endl;
+		//std::cout << "fuck" << std::endl;
 		p += time::delta;
 		if (p >= lifetime)
 		{
