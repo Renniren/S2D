@@ -119,63 +119,61 @@ public:
 
 	inline Vector2 operator * (float n)
 	{
-		Vector2 r = Vector2(*this);
-		r.x *= n;
-		r.y *= n;
-		return r;
+		this->x *= n;
+		this->x *= n;
+		return *this;
 	}
 
 	inline Vector2 operator = (Vector2 n)
 	{
-		Vector2 fuckoff = Vector2(*this);
-		fuckoff.x = n.x;
-		fuckoff.y = n.y;
-		return fuckoff;
+		this->x = n.x;
+		this->y = n.y;
+		return *this;
 	}
 
 	inline Vector2 operator *= (float n)
 	{
-		Vector2 r = Vector2(*this);
-		r.x *= n;
-		r.y *= n;
-		return r;
+		this->x *= n;
+		this->y *= n;
+		return *this;
 	}
 
 	inline Vector2 operator += (Vector2 other)
 	{
-		Vector2 r = Vector2(*this);
-		r.x += other.x;
-		r.y += other.y;
-		return r;
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
 	}
 
 	inline Vector2 operator -= (Vector2 other)
 	{
-		Vector2 r = Vector2(*this);
-		r.x -= other.x;
-		r.y -= other.y;
-		return r;
+		this->x -= other.x;
+		this->y -= other.y;
+		return *this;
 	}
 	
 	//Operators defined for compatibility
 
 	inline Vector2 operator += (sf::Vector2f other)
 	{
-		Vector2 r = Vector2(*this);
-		r.x += other.x;
-		r.y += other.y;
-		return r;
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
 	}
 
 	inline Vector2 operator -= (sf::Vector2f other)
 	{
-		Vector2 r = Vector2(*this);
-		r.x -= other.x;
-		r.y -= other.y;
-		return r;
+		this->x -= other.x;
+		this->y -= other.y;
+		return *this;
 	}
 
-
+	inline Vector2 operator = (sf::Vector2f n)
+	{
+		this->x = n.x;
+		this->y = n.y;
+		return *this;
+	}
 
 	inline operator sf::Vector2f()
 	{
@@ -432,8 +430,6 @@ public:
 	}
 };
 
-
-
 class TextureManager
 {
 public:
@@ -495,7 +491,7 @@ MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextu
 class GameObject : public Updatable
 {
 public:
-	sf::Vector2f position, scale;
+	Vector2 position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
 	std::string name;
@@ -848,8 +844,6 @@ public:
 std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
-
-
 class ClassUpdater
 {
 public:
@@ -919,8 +913,6 @@ public:
 		}
 	}
 };
-
-
 
 class UpdatableTest : public Updatable
 {
@@ -1029,7 +1021,5 @@ public:
 		}
 	}
 };
-
-
 
 #endif
