@@ -62,6 +62,24 @@ int random(int min, int max)
 	return dist(rng);
 }
 
+bool isKeyPressedTap(sf::Keyboard::Key query)
+{
+	static bool res = false;
+	if (sf::Keyboard::isKeyPressed(query))
+	{
+		if (!res)
+		{
+			res = true;
+			return true;
+		}
+	}
+	else
+	{
+		res = false;
+	}
+	return false;
+}
+
 void clamp(float& num, float&& lower, float&& upper)
 {
 	if (num < lower) num = lower;
@@ -80,23 +98,25 @@ float random(float Min, float Max)
 }
 
 enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
+
 enum DrawMode { DrawWhenLevelActive, DrawAlways, DontDraw };
 
-class object
-{
-public:
-	int instance_id;
-
-	virtual std::string to_string()
-	{
-		return "";
-	}
-};
+enum LoadLevelType {Override, Background};
 
 struct Vector2
 {
 public:
 	float x, y;
+
+	static float Distance(Vector2 a, Vector2 b)
+	{
+		return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+	}
+
+	float Distance(Vector2 b)
+	{
+		return sqrt(pow(this->x - b.x, 2) + pow(this->y - b.y, 2));
+	}
 
 	Vector2()
 	{
@@ -116,6 +136,12 @@ public:
 		this->x = d.x;
 		this->y = d.y;
 	}
+
+	float magnitude()
+	{
+		return sqrt(pow(x, 2) + pow(y, 2));
+	}
+
 
 	inline Vector2 operator * (float n)
 	{
@@ -183,6 +209,51 @@ public:
 	inline operator b2Vec2()
 	{
 		return b2Vec2(this->x, this->y);
+	}
+};
+
+struct S2DTextureSpritePair
+{
+public:
+	int id;
+	sf::Texture* tex;
+	sf::Sprite* sprite;
+
+	S2DTextureSpritePair(int n, sf::Texture* t, sf::Sprite* s)
+	{
+		this->id = n;
+		this->tex = t;
+		this->sprite = s;
+	}
+};
+
+struct GameObjectSprite
+{
+public:
+	int tsp_id;
+	sf::Sprite s;
+
+	GameObjectSprite()
+	{
+		tsp_id = -1;
+		s = sf::Sprite();
+	}
+
+	GameObjectSprite(int tsp_id, sf::Sprite s)
+	{
+		this->tsp_id = tsp_id;
+		this->s = s;
+	}
+};
+
+class object
+{
+public:
+	int instance_id;
+
+	virtual std::string to_string()
+	{
+		return "";
 	}
 };
 
@@ -287,7 +358,6 @@ public:
 	}
 };
 
-enum LoadLevelType {Override, Background};
 class LevelManager
 {
 public:
@@ -326,33 +396,7 @@ public:
 	}
 };
 
-Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
-Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
-
-Vector2 Physics::Gravity = Vector2(0, 9.81f);
-//sf::Vector2f Physics::Gravity = sf::Vector2f(0, 9.81f);
-
-S2DRuntime* S2DRuntime::Instance = nullptr;
-
 bool doClear = true;
-
-bool isKeyPressedTap(sf::Keyboard::Key query)
-{
-	static bool res = false;
-	if (sf::Keyboard::isKeyPressed(query))
-	{
-		if (!res)
-		{
-			res = true;
-			return true;
-		}
-	}
-	else
-	{
-		res = false;
-	}
-	return false;
-}
 
 class time
 {
@@ -386,49 +430,7 @@ public:
 	}
 };
 
-float			time::Scale						= 1;
-float			time::delta						= 0,
-				time::physicsDelta				= 0.02f,
-				time::deltaUnscaled		= 0;
-sf::Int64	time::current			= 0,
-				time::last					= 0;
-sf::Time	time::_time				= sf::Time();
-sf::Clock	time::global_clock	= sf::Clock();
-
 //Created so that when a GameObject needs to be destroyed, we can also clean up the Sprite/Texture it also created.
-struct S2DTextureSpritePair
-{
-public:
-	int id;
-	sf::Texture* tex;
-	sf::Sprite* sprite;
-
-	S2DTextureSpritePair(int n, sf::Texture* t, sf::Sprite* s)
-	{
-		this->id = n;
-		this->tex = t;
-		this->sprite = s;
-	}
-};
-
-struct GameObjectSprite
-{
-public:
-	int tsp_id;
-	sf::Sprite s;
-
-	GameObjectSprite()
-	{
-		tsp_id = -1;
-		s = sf::Sprite();
-	}
-
-	GameObjectSprite(int tsp_id, sf::Sprite s)
-	{
-		this->tsp_id = tsp_id;
-		this->s = s;
-	}
-};
 
 class TextureManager
 {
@@ -483,10 +485,6 @@ public:
 		return GameObjectSprite(s.id, *ret);
 	}
 };
-
-//std::vector<S2DTextureSpritePair> TextureManager::LoadedTextures = std::vector<S2DTextureSpritePair>();
-
-MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
 
 class GameObject : public Updatable
 {
@@ -703,8 +701,6 @@ public:
 	}
 };
 
-MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
-
 class Camera : public GameObject
 {
 public:
@@ -841,9 +837,6 @@ public:
 	}
 };
 
-std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
-std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
-
 class ClassUpdater
 {
 public:
@@ -872,7 +865,7 @@ public:
 		}
 	}
 
-	static void RebuildGameObjectList()
+	static void RebuildGameObjectList() noexcept
 	{
 		std::vector<GameObject*> old = GameObject::ActiveObjects;
 		std::vector<GameObject*> _new = std::vector<GameObject*>();
@@ -949,7 +942,7 @@ public:
 class TestPlayer : public GameObject, public object
 {
 public:
-	float speed = 4.0f;
+	float speed = 40.0f;
 
 	TestPlayer() : GameObject(true)
 	{
@@ -1021,5 +1014,63 @@ public:
 		}
 	}
 };
+
+void UpdateEngine()
+{
+	time::update();
+	ClassUpdater::RebuildGameObjectList();
+
+	ClassUpdater::UpdateUpdatables();
+	ClassUpdater::UpdateGameObjects();
+
+	ClassUpdater::RebuildGameObjectList();
+
+	ClassUpdater::PostUpdateUpdatables();
+	ClassUpdater::PostUpdateGameObjects();
+}
+
+void InitializeEngine()
+{
+	using namespace sf;
+	using namespace std;
+	srand(time(NULL));
+
+	time::init();
+	S2DRuntime* runtime = new S2DRuntime();
+	RenderWindow* window = new RenderWindow(VideoMode(800, 600), "window");
+	runtime->GAME_WINDOW = window;
+	S2DRuntime::Instance = runtime;
+
+	if (S2DRuntime::Instance->release_mode == S2D_RELEASE)
+	{
+		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_name);
+	}
+
+	if (S2DRuntime::Instance->release_mode == S2D_DEBUG)
+	{
+		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+	}
+}
+
+float			time::Scale						= 1;
+float			time::delta						= 0,
+				time::physicsDelta				= 0.02f,
+				time::deltaUnscaled		= 0;
+sf::Int64	time::current			= 0,
+				time::last					= 0;
+sf::Time	time::_time				= sf::Time();
+sf::Clock	time::global_clock	= sf::Clock();
+
+std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
+std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
+
+Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
+Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
+Vector2 Physics::Gravity = Vector2(0, 9.81f);
+
+S2DRuntime* S2DRuntime::Instance = nullptr;
+
+MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
+MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
 
 #endif

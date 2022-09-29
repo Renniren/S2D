@@ -3,19 +3,48 @@
 
 
 sf::Event event;
-int main()
+
+void RunDestroyTest()
 {
 	using namespace sf;
 	using namespace std;
-	srand(time(NULL));
-
-	S2DRuntime* runtime = new S2DRuntime();
-	RenderWindow window(VideoMode(800, 600), "window");
-	runtime->GAME_WINDOW = &window;
 	
-	time::init();
+	static vector<TestPlayer*> plys = vector<TestPlayer*>();
+	static bool d = false;
+	
+	if (isKeyPressedTap(Keyboard::P))
+	{
+		if (!d)
+		{
+			cout << "sadfdf";
+			printf("\ntest");
+			for (size_t i = 0; i < 300; i++)
+			{
+				plys.push_back(new TestPlayer());
+			}
 
-	S2DRuntime::Instance = runtime;
+			for (size_t i = 0; i < plys.size(); i++)
+			{
+				plys[i]->RequestDestroy();
+			}
+			TextureManager::RegenerateLoadedTextureList();
+			d = true;
+			printf("\nCompleted test");
+
+		}
+	}
+	else
+	{
+		d = false;
+	}
+}
+
+
+
+int main()
+{
+	InitializeEngine();
+
 	Camera* cam = new Camera();
 	cam->isMain = true;
 	TestPlayer* test = Instantiate(TestPlayer);
@@ -23,79 +52,19 @@ int main()
 	UpdatableTest* test3 = Instantiate(UpdatableTest);
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
-	//test->parent_level = LevelManager::ActiveLevel;
-	//test2->parent_level = LevelManager::ActiveLevel;
-	//cam->parent_level = LevelManager::ActiveLevel;
 	
-	if (runtime->release_mode == S2D_RELEASE)
-	{
-		runtime->GAME_WINDOW->setTitle(game_name);
-	}
-
-	if (runtime->release_mode == S2D_DEBUG)
-	{
-		runtime->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
-	}
-
-	vector<TestPlayer*> plys = vector<TestPlayer*>();
-	bool d;
 	printf("init");
-	while(runtime->GAME_WINDOW->isOpen())
+	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
-
-			/*#ifdef S2D_DEBUG
-		
-	#endif
-	#ifndef S2D_DEBUG
-			GAME_WINDOW->setTitle(game_name);
-	#endif*/
+		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
+		}
+		RunDestroyTest();
+		if(doClear) S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 		GameObject::ManageDestroyRequests();
-
-		if(doClear) runtime->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
-
-		while (runtime->GAME_WINDOW->pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed) runtime->GAME_WINDOW->close();
-		}
-
-		if (isKeyPressedTap(Keyboard::P))
-		{
-			if (!d)
-			{
-				cout << "sadfdf";
-				printf("\ntest");
-				for (size_t i = 0; i < 3; i++)
-				{
-					plys.push_back(new TestPlayer());
-				}
-
-				for (size_t i = 0; i < plys.size(); i++)
-				{
-					plys[i]->RequestDestroy();
-				}
-				TextureManager::RegenerateLoadedTextureList();
-				d = true;
-				printf("\nCompleted test");
-
-			}
-		}
-		else
-		{
-			d = false;
-		}
-
-		time::update();
-		ClassUpdater::RebuildGameObjectList();
-		
-		ClassUpdater::UpdateUpdatables();
-		ClassUpdater::UpdateGameObjects();
-		
-		ClassUpdater::RebuildGameObjectList();
-
-		ClassUpdater::PostUpdateUpdatables();
-		ClassUpdater::PostUpdateGameObjects();
-		
-		runtime->GAME_WINDOW->display();
+		UpdateEngine();
+		S2DRuntime::Instance->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
 
