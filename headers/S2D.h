@@ -39,7 +39,10 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define MStaticPointerDefinition(type, cls) type cls::type = new type()
 
 #define Instantiate(x) new x()
-#define init_behavior ActiveObjects.push_back(this)
+#define init_behavior \
+id = ActiveObjects.size();\
+ActiveObjects.push_back(this)
+
 #define init_updatable UpdatableObjects.push_back(this)
 
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
@@ -108,12 +111,12 @@ struct Vector2
 public:
 	float x, y;
 
-	static float Distance(Vector2 a, Vector2 b)
+	static inline float Distance(Vector2 a, Vector2 b)
 	{
 		return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 	}
 
-	float Distance(Vector2 b)
+	inline float Distance(Vector2 b)
 	{
 		return sqrt(pow(this->x - b.x, 2) + pow(this->y - b.y, 2));
 	}
@@ -137,17 +140,17 @@ public:
 		this->y = d.y;
 	}
 
-	float magnitude()
+	inline float magnitude()
 	{
 		return sqrt(pow(x, 2) + pow(y, 2));
 	}
 
-
 	inline Vector2 operator * (float n)
 	{
-		this->x *= n;
-		this->x *= n;
-		return *this;
+		Vector2 v = Vector2(*this);
+		v.x *= n;
+		v.y *= n;
+		return v;
 	}
 
 	inline Vector2 operator = (Vector2 n)
@@ -164,12 +167,6 @@ public:
 		return *this;
 	}
 
-	inline Vector2 operator += (Vector2 other)
-	{
-		this->x += other.x;
-		this->y += other.y;
-		return *this;
-	}
 
 	inline Vector2 operator -= (Vector2 other)
 	{
@@ -177,20 +174,40 @@ public:
 		this->y -= other.y;
 		return *this;
 	}
+
+	inline Vector2 operator + (Vector2 other)
+	{
+		Vector2 v = Vector2(*this);
+		v.x += other.x;
+		v.y += other.y;
+		return v;
+	}
+
+	inline Vector2 operator += (Vector2 other)
+	{
+		Vector2 v = Vector2(*this);
+		v.x += other.x;
+		v.y += other.y;
+		
+		return *this = v;
+	}
+
 	
 	//Operators defined for compatibility
 
 	inline Vector2 operator += (sf::Vector2f other)
 	{
-		this->x += other.x;
-		this->y += other.y;
+		Vector2 v = Vector2(*this);
+		v.x += other.x;
+		v.y += other.y;
 		return *this;
 	}
 
 	inline Vector2 operator -= (sf::Vector2f other)
 	{
-		this->x -= other.x;
-		this->y -= other.y;
+		Vector2 v = Vector2(*this);
+		v.x -= other.x;
+		v.y -= other.y;
 		return *this;
 	}
 
@@ -318,6 +335,7 @@ class Level
 public:
 	std::string name;
 	World world_settings;
+	std::vector<int>Objects = std::vector<int>();
 	int id;
 
 	Level(std::string name, World settings)
@@ -364,6 +382,7 @@ public:
 	static Level* DefaultLevel;
 	static Level* ActiveLevel;
 	std::vector<Level*>LoadedLevels = std::vector<Level*>();
+
 	
 	void LoadLevel(Level level, LoadLevelType mode = LoadLevelType::Override)
 	{
@@ -489,6 +508,7 @@ public:
 class GameObject : public Updatable
 {
 public:
+	Vector2 velocity;
 	Vector2 position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
@@ -506,8 +526,8 @@ public:
 
 	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
-	sf::Vector2f velocity;
 	
+	int id;
 	float rotation;
 	static std::vector<GameObject*> ActiveObjects;
 
@@ -568,12 +588,12 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
-			position += velocity * time::physicsDelta * time::Scale;
+			velocity += Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
+			position += velocity * (time::physicsDelta * time::Scale);
 		}
 		else
 		{
-			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta;
+			velocity += Physics::Gravity * gravityInfluence * time::physicsDelta;
 			position += velocity * time::physicsDelta;
 		}
 	}
@@ -726,7 +746,7 @@ public:
 		init_behavior;
 		drawMode = DrawMode::DontDraw;
 
-		name = "new Camera";
+		name = "Camera";
 		buildView();
 	}
 	
@@ -770,8 +790,8 @@ public:
 	bool emitting;
 	int maxParticles;
 	float duration;
-	float speed = 2;
-	float delay = 0.2f;
+	float speed = 5.1f;
+	float delay = 0.02f;
 	float lifetime = 5;
 	GameObjectSprite sprite;
 	std::vector<Particle*> particles = std::vector<Particle*>();
@@ -781,6 +801,7 @@ public:
 		init_behavior;
 		sprite = TextureManager::CreateSprite("sprites\\square.png");
 		maxParticles = 34;
+		name = "ParticleSystem";
 	}
 
 	void emit(int amt = 1)
@@ -790,7 +811,7 @@ public:
 			Particle* particle = new Particle(lifetime);
 			particle->position = position;
 
-			particle->velocity += sf::Vector2f(random(-speed, speed),
+			particle->velocity = Vector2(random(-speed, speed),
 				random(-speed, speed));
 			particle->active = true;
 			particle->hasPhysics = true;
@@ -806,7 +827,7 @@ public:
 				Particle* particle = new Particle(lifetime);
 				particle->position = position;
 
-				particle->velocity += sf::Vector2f(random(-speed, speed),
+				particle->velocity += Vector2(random(-speed, speed),
 					random(-speed, speed));
 				particle->active = true;
 				particle->hasPhysics = true;
@@ -871,10 +892,11 @@ public:
 		std::vector<GameObject*> _new = std::vector<GameObject*>();
 		for (size_t i = 0; i < old.size(); i++)
 		{
-			if (old[i] == nullptr) continue;
+			if (old[i] == nullptr || (int)old[i] == NULL) continue;
 
 			if (!old[i]->awaitingDestroy)
 			{
+				
 				_new.push_back(old[i]);
 			}
 		}
@@ -1027,6 +1049,8 @@ void UpdateEngine()
 
 	ClassUpdater::PostUpdateUpdatables();
 	ClassUpdater::PostUpdateGameObjects();
+
+	ClassUpdater::RebuildGameObjectList();
 }
 
 void InitializeEngine()
@@ -1054,7 +1078,7 @@ void InitializeEngine()
 
 float			time::Scale						= 1;
 float			time::delta						= 0,
-				time::physicsDelta				= 0.02f,
+				time::physicsDelta				= 0.01f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
 				time::last					= 0;

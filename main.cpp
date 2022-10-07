@@ -43,6 +43,8 @@ void RunDestroyTest()
 
 int main()
 {
+	using namespace std;
+	srand(time(NULL));
 	InitializeEngine();
 
 	Camera* cam = new Camera();

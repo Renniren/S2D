@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SFML_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pez\source\repos\Renniren\S2D\headers\box2d;C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\sakbo\source\repos\Renniren\S2D\headers\SFML;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\sakbo\source\repos\Renniren\S2D\headers\box2d;C:\Users\pez\source\repos\Renniren\S2D\headers\box2d;C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\sakbo\source\repos\Renniren\S2D\headers\SFML;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SFML_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sakbo\source\repos\Renniren\S2D\headers\SFML;C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\sakbo\source\repos\Renniren\S2D\headers\box2d;C:\Users\sakbo\source\repos\Renniren\S2D\headers\SFML;C:\Users\sakbo\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers;C:\Users\pez\source\repos\Renniren\S2D\headers\SFML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
