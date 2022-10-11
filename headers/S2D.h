@@ -1036,7 +1036,6 @@ public:
 		}
 
 
-
 		float incr = 0.02f;
 		if (Keyboard::isKeyPressed(Keyboard::R))
 		{
