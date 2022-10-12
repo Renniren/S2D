@@ -9,6 +9,7 @@
 #include <random>
 #include<functional>
 #include <SFML/Graphics.hpp>
+//#include <unistd.h>
 
 #ifndef GUARD_S2D_DEFINES
 #define GUARD_S2D_DEFINES
@@ -41,6 +42,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define Instantiate(x) new x()
 #define init_gameobject ActiveObjects.push_back(new GameObject::GameObjectInstance(this))
 #define init_updatable UpdatableObjects.push_back(this)
+#define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
 
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
 #define S2D_DEBUG 1
@@ -731,15 +733,142 @@ public:
 //Behaviors act as hooks onto GameObjects in a way similar to Unity's MonoBehaviors.
 class Behavior
 {
+private:
+	bool awaitingDestroy;
+
 public:
 	GameObject* gameObject;
+	bool active;
+	int id;
 
+
+	//------------------------------------
+
+	struct DestroyRequest
+	{
+	public:
+		Behavior* b;
+		bool destroyed;
+
+		DestroyRequest(Behavior* b)
+		{
+			this->b = b;
+			destroyed = false;
+		}
+	};
+
+	struct BehaviorInstance
+	{
+	public:
+		Behavior* b;
+		bool destroyed;
+
+		BehaviorInstance(Behavior* b)
+		{
+			this->b = b;
+			destroyed = false;
+		}
+	};
+	
+	static std::vector<BehaviorInstance*> ActiveBehaviors;
+	static std::vector<DestroyRequest> DestroyRequests;
+
+	static void RebuildDestroyRequestList()
+	{
+		std::vector<DestroyRequest> old = std::vector<DestroyRequest>(DestroyRequests);
+		std::vector<DestroyRequest> _new = std::vector<DestroyRequest>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (!old[i].destroyed)
+			{
+				_new.push_back(old[i]);
+			}
+		}
+
+		DestroyRequests = _new;
+	}
+
+	static void MakeDestroyRequest(Behavior* g)
+	{
+		DestroyRequests.push_back(DestroyRequest(g));
+	}
+
+	static void ManageDestroyRequests()
+	{
+		for (size_t i = 0; i < DestroyRequests.size(); i++)
+		{
+			if (DestroyRequests[i].b != nullptr)
+			{
+				DestroyRequests[i].b->DestroyImmediate();
+				DestroyRequests[i].destroyed = true;
+			}
+		}
+		RebuildDestroyRequestList();
+	}
+	
+	//------------------------------------
+
+	void RequestDestroy()
+	{
+		MakeDestroyRequest(this);
+		ActiveBehaviors[id]->destroyed = true;
+		awaitingDestroy = true;
+		//destroyed();
+	}
+
+	void DestroyImmediate()
+	{
+		delete this;
+	}
+
+	virtual void OnDestroy() {};
 	virtual void Start() {};
+	virtual void PreUpdate() {};
 	virtual void Update() {};
+	virtual void PhysicsUpdate() {};
 	virtual void LateUpdate() {};
 
+	void DestroyRequested()
+	{
+		OnDestroy();
+	}
 
+	void bStart()
+	{
+		Start();
+	}
+
+	void PreTick()
+	{
+		PreUpdate();
+	}
+
+	void Tick()
+	{
+		Update();
+	}
+
+	void PhysicsTick()
+	{
+		PhysicsUpdate();
+	}
+
+	void PostTick()
+	{
+		LateUpdate();
+	}
+
+	Behavior()
+	{
+		id = ActiveBehaviors.size();
+	}
 };
+
+template<typename T>  
+T AddComponent()
+{
+	static_assert(std::is_base_of<Behavior, T>);
+}
 
 class Camera : public GameObject
 {
@@ -916,6 +1045,10 @@ public:
 			if (!old[i]->destroyed)
 			{
 				_new.push_back(old[i]);
+			}
+			else
+			{
+				delete old[i];
 			}
 		}
 
@@ -1111,5 +1244,6 @@ S2DRuntime* S2DRuntime::Instance = nullptr;
 
 MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
+MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
 
 #endif
