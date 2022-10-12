@@ -19,7 +19,7 @@ void RunDestroyTest()
 		{
 			cout << "sadfdf";
 			printf("\ntest");
-			for (size_t i = 0; i < 300; i++)
+			for (size_t i = 0; i < 30; i++)
 			{
 				plys.push_back(new TestPlayer());
 			}
@@ -57,7 +57,8 @@ int main()
 	ps->emitting = true;
 	
 	AddComponent<BehaviorTest>(cam);
-
+	GetComponent<BehaviorTest>(cam)->GetComponentWorksCheck();
+	float f = 0;
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
@@ -65,6 +66,15 @@ int main()
 		{
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
+
+		f += time::delta;
+		if (f >= 3)
+		{
+			cout << time::delta << endl;
+			cout << "3 seconds have passed" << endl;
+			f = 0;
+		}
+
 		RunDestroyTest();
 		if(doClear) S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 		GameObject::ManageDestroyRequests();

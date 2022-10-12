@@ -737,10 +737,12 @@ private:
 	bool awaitingDestroy;
 
 public:
+	void* host_type;
+	std::string type_name;
 	GameObject* gameObject;
 	bool active;
 	int id;
-
+	
 
 	//------------------------------------
 
@@ -859,6 +861,7 @@ public:
 	}
 
 protected:
+
 	Behavior()
 	{
 		
@@ -873,6 +876,8 @@ public:
 
 	void INITALIZE_COMPONENT()
 	{
+		host_type = this;
+		type_name = typeid(this).name();
 		id = ActiveBehaviors.size();
 		init_behavior;
 	}
@@ -891,6 +896,11 @@ public:
 		}
 	}
 
+	void GetComponentWorksCheck()
+	{
+		std::cout << "get component works" << std::endl;
+	}
+
 	void LateUpdate()
 	{
 		c++;
@@ -905,6 +915,23 @@ T* AddComponent(GameObject to)
 	c->INITALIZE_COMPONENT();
 	c->gameObject = &to;
 	return c;
+}
+
+template<typename T>
+T* GetComponent(GameObject* on)
+{
+	std::string desired_type = typeid(T).name();
+	for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
+	{
+		if (Behavior::ActiveBehaviors[i]->b->gameObject == on)
+		{
+			if (Behavior::ActiveBehaviors[i]->b->type_name == desired_type)
+			{
+				return (T*)Behavior::ActiveBehaviors[i]->b->host_type;
+			}
+		}
+	}
+	return nullptr;
 }
 
 class Camera : public GameObject
@@ -954,6 +981,7 @@ public:
 	{
 		init_gameobject;
 		l = lifetime;
+		p = 0;
 	}
 
 	void update()
@@ -963,7 +991,7 @@ public:
 		if (p >= lifetime)
 		{
 			p = 0;
-			//RequestDestroy();
+			RequestDestroy();
 		}
 	}
 };
@@ -978,7 +1006,7 @@ public:
 	float duration;
 	float speed = 2;
 	float delay = 0.2f;
-	float lifetime = 5;
+	float lifetime = 3;
 	GameObjectSprite sprite;
 	std::vector<Particle*> particles = std::vector<Particle*>();
 
@@ -1290,6 +1318,7 @@ void UpdateEngine()
 	time::update();
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
+
 	ClassUpdater::PreUpdateBehaviors();
 
 	ClassUpdater::UpdateUpdatables();
