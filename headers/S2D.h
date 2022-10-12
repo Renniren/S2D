@@ -39,10 +39,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define MStaticPointerDefinition(type, cls) type cls::type = new type()
 
 #define Instantiate(x) new x()
-#define init_behavior \
-id = ActiveObjects.size();\
-ActiveObjects.push_back(this)
-
+#define init_gameobject ActiveObjects.push_back(new GameObject::GameObjectInstance(this))
 #define init_updatable UpdatableObjects.push_back(this)
 
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
@@ -111,12 +108,12 @@ struct Vector2
 public:
 	float x, y;
 
-	static inline float Distance(Vector2 a, Vector2 b)
+	static float Distance(Vector2 a, Vector2 b)
 	{
 		return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 	}
 
-	inline float Distance(Vector2 b)
+	float Distance(Vector2 b)
 	{
 		return sqrt(pow(this->x - b.x, 2) + pow(this->y - b.y, 2));
 	}
@@ -140,17 +137,17 @@ public:
 		this->y = d.y;
 	}
 
-	inline float magnitude()
+	float magnitude()
 	{
 		return sqrt(pow(x, 2) + pow(y, 2));
 	}
 
+
 	inline Vector2 operator * (float n)
 	{
-		Vector2 v = Vector2(*this);
-		v.x *= n;
-		v.y *= n;
-		return v;
+		this->x *= n;
+		this->x *= n;
+		return *this;
 	}
 
 	inline Vector2 operator = (Vector2 n)
@@ -167,6 +164,12 @@ public:
 		return *this;
 	}
 
+	inline Vector2 operator += (Vector2 other)
+	{
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
+	}
 
 	inline Vector2 operator -= (Vector2 other)
 	{
@@ -174,40 +177,20 @@ public:
 		this->y -= other.y;
 		return *this;
 	}
-
-	inline Vector2 operator + (Vector2 other)
-	{
-		Vector2 v = Vector2(*this);
-		v.x += other.x;
-		v.y += other.y;
-		return v;
-	}
-
-	inline Vector2 operator += (Vector2 other)
-	{
-		Vector2 v = Vector2(*this);
-		v.x += other.x;
-		v.y += other.y;
-		
-		return *this = v;
-	}
-
 	
 	//Operators defined for compatibility
 
 	inline Vector2 operator += (sf::Vector2f other)
 	{
-		Vector2 v = Vector2(*this);
-		v.x += other.x;
-		v.y += other.y;
+		this->x += other.x;
+		this->y += other.y;
 		return *this;
 	}
 
 	inline Vector2 operator -= (sf::Vector2f other)
 	{
-		Vector2 v = Vector2(*this);
-		v.x -= other.x;
-		v.y -= other.y;
+		this->x -= other.x;
+		this->y -= other.y;
 		return *this;
 	}
 
@@ -335,7 +318,6 @@ class Level
 public:
 	std::string name;
 	World world_settings;
-	std::vector<int>Objects = std::vector<int>();
 	int id;
 
 	Level(std::string name, World settings)
@@ -382,7 +364,6 @@ public:
 	static Level* DefaultLevel;
 	static Level* ActiveLevel;
 	std::vector<Level*>LoadedLevels = std::vector<Level*>();
-
 	
 	void LoadLevel(Level level, LoadLevelType mode = LoadLevelType::Override)
 	{
@@ -508,7 +489,6 @@ public:
 class GameObject : public Updatable
 {
 public:
-	Vector2 velocity;
 	Vector2 position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
@@ -526,10 +506,25 @@ public:
 
 	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
+	sf::Vector2f velocity;
 	
 	int id;
 	float rotation;
-	static std::vector<GameObject*> ActiveObjects;
+	
+	struct GameObjectInstance
+	{
+	public:
+		GameObject* obj;
+		bool destroyed;
+
+		GameObjectInstance(GameObject* g)
+		{
+			this->obj = g;
+			this->destroyed = false;
+		}
+	};
+
+	static std::vector<GameObjectInstance*> ActiveObjects;
 
 	struct DestroyRequest
 	{
@@ -543,12 +538,13 @@ public:
 		}
 	};
 
+
 	static std::vector<DestroyRequest> DestroyRequests;
 
 	static void RebuildDestroyRequestList()
 	{
-		std::vector<DestroyRequest> old = std::vector< DestroyRequest>(DestroyRequests);
-		std::vector<DestroyRequest> _new = std::vector< DestroyRequest>();
+		std::vector<DestroyRequest> old = std::vector<DestroyRequest>(DestroyRequests);
+		std::vector<DestroyRequest> _new = std::vector<DestroyRequest>();
 		for (size_t i = 0; i < old.size(); i++)
 		{
 			if (!old[i].destroyed)
@@ -578,6 +574,12 @@ public:
 		RebuildDestroyRequestList();
 	}
 
+	template<typename t>
+	t GetComponent()
+	{
+
+	}
+
 	void levelChanged()
 	{
 
@@ -588,12 +590,12 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
-			position += velocity * (time::physicsDelta * time::Scale);
+			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
+			position += velocity * time::physicsDelta * time::Scale;
 		}
 		else
 		{
-			velocity += Physics::Gravity * gravityInfluence * time::physicsDelta;
+			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta;
 			position += velocity * time::physicsDelta;
 		}
 	}
@@ -612,6 +614,7 @@ public:
 	void RequestDestroy()
 	{
 		MakeDestroyRequest(this);
+		ActiveObjects[id]->destroyed = true;
 		awaitingDestroy = true;
 		destroyed();
 	}
@@ -705,11 +708,13 @@ public:
 
 	GameObject(bool setActive = true)
 	{
+		id = ActiveObjects.size();
 		active = setActive;
 		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
 		position = sf::Vector2f(0, 0);
 		name = "new WorldObject";
+
 	}
 
 
@@ -717,8 +722,23 @@ public:
 
 	void MakeStandalone()
 	{
-		init_behavior;
+		init_gameobject;
 	}
+};
+
+
+
+//Behaviors act as hooks onto GameObjects in a way similar to Unity's MonoBehaviors.
+class Behavior
+{
+public:
+	GameObject* gameObject;
+
+	virtual void Start() {};
+	virtual void Update() {};
+	virtual void LateUpdate() {};
+
+
 };
 
 class Camera : public GameObject
@@ -743,10 +763,10 @@ public:
 
 	Camera() : GameObject(true)
 	{
-		init_behavior;
+		init_gameobject;
 		drawMode = DrawMode::DontDraw;
 
-		name = "Camera";
+		name = "new Camera";
 		buildView();
 	}
 	
@@ -766,7 +786,7 @@ public:
 
 	Particle(float l) : GameObject(true)
 	{
-		init_behavior;
+		init_gameobject;
 		l = lifetime;
 	}
 
@@ -790,18 +810,17 @@ public:
 	bool emitting;
 	int maxParticles;
 	float duration;
-	float speed = 5.1f;
-	float delay = 0.02f;
+	float speed = 2;
+	float delay = 0.2f;
 	float lifetime = 5;
 	GameObjectSprite sprite;
 	std::vector<Particle*> particles = std::vector<Particle*>();
 
 	ParticleSystem() : GameObject(true)
 	{
-		init_behavior;
+		init_gameobject;
 		sprite = TextureManager::CreateSprite("sprites\\square.png");
 		maxParticles = 34;
-		name = "ParticleSystem";
 	}
 
 	void emit(int amt = 1)
@@ -811,7 +830,7 @@ public:
 			Particle* particle = new Particle(lifetime);
 			particle->position = position;
 
-			particle->velocity = Vector2(random(-speed, speed),
+			particle->velocity += sf::Vector2f(random(-speed, speed),
 				random(-speed, speed));
 			particle->active = true;
 			particle->hasPhysics = true;
@@ -827,7 +846,7 @@ public:
 				Particle* particle = new Particle(lifetime);
 				particle->position = position;
 
-				particle->velocity += Vector2(random(-speed, speed),
+				particle->velocity += sf::Vector2f(random(-speed, speed),
 					random(-speed, speed));
 				particle->active = true;
 				particle->hasPhysics = true;
@@ -888,12 +907,16 @@ public:
 
 	static void RebuildGameObjectList() noexcept
 	{
-		std::vector<GameObject*> old = GameObject::ActiveObjects;
-		std::vector<GameObject*> _new = std::vector<GameObject*>();
+		std::vector<GameObject::GameObjectInstance*> old = GameObject::ActiveObjects;
+		std::vector<GameObject::GameObjectInstance*> _new = std::vector<GameObject::GameObjectInstance*>();
 		for (size_t i = 0; i < old.size(); i++)
 		{
-			if (old[i] == nullptr || (int)old[i] == NULL) continue;
-			_new.push_back(old[i]);
+			if (old[i] == nullptr) continue;
+
+			if (!old[i]->destroyed)
+			{
+				_new.push_back(old[i]);
+			}
 		}
 
 		GameObject::ActiveObjects = _new;
@@ -907,7 +930,7 @@ public:
 			{
 				continue;
 			}
-			GameObject::ActiveObjects[i]->tick();
+			GameObject::ActiveObjects[i]->obj->tick();
 		}
 	}
 
@@ -919,7 +942,7 @@ public:
 			{
 				continue;
 			}
-			GameObject::ActiveObjects[i]->after_tick();
+			GameObject::ActiveObjects[i]->obj->after_tick();
 		}
 	}
 };
@@ -948,7 +971,7 @@ class PhysicsTestObject : public GameObject
 public:
 	PhysicsTestObject() : GameObject(true)
 	{
-		init_behavior;
+		init_gameobject;
 		hasPhysics = true;
 		position = sf::Vector2f(1, 4);
 		scale = sf::Vector2f(0.03, 0.03);
@@ -963,7 +986,7 @@ public:
 
 	TestPlayer() : GameObject(true)
 	{
-		init_behavior;
+		init_gameobject;
 
 		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\square.png");
@@ -1013,7 +1036,6 @@ public:
 		}
 
 
-
 		float incr = 0.02f;
 		if (Keyboard::isKeyPressed(Keyboard::R))
 		{
@@ -1044,8 +1066,6 @@ void UpdateEngine()
 
 	ClassUpdater::PostUpdateUpdatables();
 	ClassUpdater::PostUpdateGameObjects();
-
-	ClassUpdater::RebuildGameObjectList();
 }
 
 void InitializeEngine()
@@ -1073,14 +1093,14 @@ void InitializeEngine()
 
 float			time::Scale						= 1;
 float			time::delta						= 0,
-				time::physicsDelta				= 0.01f,
+				time::physicsDelta				= 0.02f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
 				time::last					= 0;
 sf::Time	time::_time				= sf::Time();
 sf::Clock	time::global_clock	= sf::Clock();
 
-std::vector<GameObject*> GameObject::ActiveObjects = std::vector<GameObject*>();
+std::vector<GameObject::GameObjectInstance*> GameObject::ActiveObjects = std::vector<GameObject::GameObjectInstance*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
 Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
