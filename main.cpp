@@ -56,6 +56,8 @@ int main()
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
 	
+	AddComponent<BehaviorTest>(cam);
+
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
@@ -66,6 +68,7 @@ int main()
 		RunDestroyTest();
 		if(doClear) S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
 		GameObject::ManageDestroyRequests();
+		Behavior::ManageDestroyRequests();
 		UpdateEngine();
 		S2DRuntime::Instance->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();

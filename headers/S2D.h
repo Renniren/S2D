@@ -43,7 +43,7 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define init_gameobject ActiveObjects.push_back(new GameObject::GameObjectInstance(this))
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
-
+#define INITALIZE_COMPONENT Initialize
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
 #define S2D_DEBUG 1
 #define S2D_RELEASE 0
@@ -858,16 +858,53 @@ public:
 		LateUpdate();
 	}
 
+protected:
 	Behavior()
 	{
+		
+	}
+};
+
+class BehaviorTest : public Behavior
+{
+public:
+
+	int c;
+
+	void INITALIZE_COMPONENT()
+	{
 		id = ActiveBehaviors.size();
+		init_behavior;
+	}
+
+	void PreUpdate()
+	{
+		std::cout << "pre update works" << std::endl;
+	}
+	
+	void Update()
+	{
+		std::cout << "update works" << std::endl;
+		if (c >= 100)
+		{
+			RequestDestroy();
+		}
+	}
+
+	void LateUpdate()
+	{
+		c++;
+		std::cout << "late update works" << std::endl;
 	}
 };
 
 template<typename T>  
-T AddComponent()
+T* AddComponent(GameObject to)
 {
-	static_assert(std::is_base_of<Behavior, T>);
+	T* c = new T();
+	c->INITALIZE_COMPONENT();
+	c->gameObject = &to;
+	return c;
 }
 
 class Camera : public GameObject
@@ -1054,6 +1091,27 @@ public:
 
 		GameObject::ActiveObjects = _new;
 	}
+
+	static void RebuildBehaviorList()
+	{
+		std::vector<Behavior::BehaviorInstance*> old = Behavior::ActiveBehaviors;
+		std::vector<Behavior::BehaviorInstance*> _new = std::vector<Behavior::BehaviorInstance*>();
+		for (size_t i = 0; i < old.size(); i++)
+		{
+			if (old[i] == nullptr) continue;
+
+			if (!old[i]->destroyed)
+			{
+				_new.push_back(old[i]);
+			}
+			else
+			{
+				delete old[i];
+			}
+		}
+
+		Behavior::ActiveBehaviors = _new;
+	}
 	
 	static void UpdateGameObjects()
 	{
@@ -1066,6 +1124,46 @@ public:
 			GameObject::ActiveObjects[i]->obj->tick();
 		}
 	}
+
+	static void PreUpdateBehaviors()
+	{
+		for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
+		{
+			if (Behavior::ActiveBehaviors[i] == nullptr)
+			{
+				continue;
+			}
+			Behavior::ActiveBehaviors[i]->b->PreTick();
+		}
+	}
+
+	static void UpdateBehaviors()
+	{
+		for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
+		{
+			if (Behavior::ActiveBehaviors[i] == nullptr)
+			{
+				continue;
+			}
+			Behavior::ActiveBehaviors[i]->b->Tick();
+		}
+	}
+
+
+
+	static void PostUpdateBehaviors()
+	{
+		for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
+		{
+			if (Behavior::ActiveBehaviors[i] == nullptr)
+			{
+				continue;
+			}
+			Behavior::ActiveBehaviors[i]->b->PostTick();
+		}
+	}
+
+
 
 	static void PostUpdateGameObjects()
 	{
@@ -1191,14 +1289,22 @@ void UpdateEngine()
 {
 	time::update();
 	ClassUpdater::RebuildGameObjectList();
+	ClassUpdater::RebuildBehaviorList();
+	ClassUpdater::PreUpdateBehaviors();
 
 	ClassUpdater::UpdateUpdatables();
 	ClassUpdater::UpdateGameObjects();
+	ClassUpdater::UpdateBehaviors();
 
 	ClassUpdater::RebuildGameObjectList();
+	ClassUpdater::RebuildBehaviorList();
 
 	ClassUpdater::PostUpdateUpdatables();
 	ClassUpdater::PostUpdateGameObjects();
+	ClassUpdater::PostUpdateBehaviors();
+
+	ClassUpdater::RebuildGameObjectList();
+	ClassUpdater::RebuildBehaviorList();
 }
 
 void InitializeEngine()
@@ -1245,5 +1351,6 @@ S2DRuntime* S2DRuntime::Instance = nullptr;
 MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
 MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
+MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
 
 #endif
