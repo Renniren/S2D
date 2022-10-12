@@ -1,5 +1,6 @@
 #include "S2D.h"
 #include <time.h>       /* time */
+#include<process.h>
 
 
 sf::Event event;
@@ -46,7 +47,7 @@ int main()
 	using namespace std;
 	srand(time(NULL));
 	InitializeEngine();
-
+	
 	Camera* cam = new Camera();
 	cam->isMain = true;
 	TestPlayer* test = Instantiate(TestPlayer);

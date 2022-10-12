@@ -893,12 +893,7 @@ public:
 		for (size_t i = 0; i < old.size(); i++)
 		{
 			if (old[i] == nullptr || (int)old[i] == NULL) continue;
-
-			if (!old[i]->awaitingDestroy)
-			{
-				
-				_new.push_back(old[i]);
-			}
+			_new.push_back(old[i]);
 		}
 
 		GameObject::ActiveObjects = _new;
