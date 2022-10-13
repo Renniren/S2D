@@ -55,6 +55,7 @@ int main()
 	
 	AddComponent<BehaviorInheritanceTest>(cam);
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
+
 	float f = 0;
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
