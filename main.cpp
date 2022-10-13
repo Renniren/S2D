@@ -2,7 +2,6 @@
 #include <time.h>       /* time */
 #include<process.h>
 
-
 sf::Event event;
 
 void RunDestroyTest()
@@ -40,8 +39,6 @@ void RunDestroyTest()
 	}
 }
 
-
-
 int main()
 {
 	using namespace std;
@@ -56,14 +53,14 @@ int main()
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
 	
-	AddComponent<BehaviorTest>(cam);
-	GetComponent<BehaviorTest>(cam)->GetComponentWorksCheck();
+	AddComponent<BehaviorInheritanceTest>(cam);
+	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 	float f = 0;
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
 		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
-		{
+		{ 
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
 
@@ -84,6 +81,5 @@ int main()
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
 
-
-  return 0;
+	return 0;
 }

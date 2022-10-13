@@ -95,7 +95,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\source\repos\Renniren\S2D\libaries\SFML;C:\Users\sakbo\source\repos\Renniren\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\pez\source\repos\Renniren\S2D\libaries\release;C:\Users\pez\source\repos\Renniren\S2D\libaries\debug;C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\source\repos\Renniren\S2D\libaries\SFML;C:\Users\sakbo\source\repos\Renniren\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-graphics-s-d.lib	;sfml-window-s-d.lib	;sfml-audio-s-d.lib	;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

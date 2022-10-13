@@ -9,7 +9,6 @@
 #include <random>
 #include<functional>
 #include <SFML/Graphics.hpp>
-//#include <unistd.h>
 
 #ifndef GUARD_S2D_DEFINES
 #define GUARD_S2D_DEFINES
@@ -28,7 +27,6 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 
 #ifndef GUARD_S2D_EVENTS
 #define GUARD_S2D_EVENTS
-
 
 #endif
 
@@ -438,6 +436,7 @@ class TextureManager
 {
 public:
 	static std::vector<S2DTextureSpritePair> LoadedTextures;
+	const static int null_id = -1;
 
 	static S2DTextureSpritePair CreateTexturePair(sf::Texture* tex, sf::Sprite* spr)
 	{
@@ -448,7 +447,6 @@ public:
 
 	static void RegenerateLoadedTextureList()
 	{
-		int null_id = -1;
 		std::vector<S2DTextureSpritePair> new_list = std::vector<S2DTextureSpritePair>();
 		for (int i = 0; i < LoadedTextures.size(); i++)
 		{
@@ -470,7 +468,7 @@ public:
 			{
 				delete LoadedTextures[i].tex;
 				delete LoadedTextures[i].sprite;
-				LoadedTextures[i].id = -1;
+				LoadedTextures[i].id = null_id;
 				break;
 			}
 		}
@@ -728,8 +726,6 @@ public:
 	}
 };
 
-
-
 //Behaviors act as hooks onto GameObjects in a way similar to Unity's MonoBehaviors.
 class Behavior
 {
@@ -905,6 +901,43 @@ public:
 	{
 		c++;
 		std::cout << "late update works" << std::endl;
+	}
+};
+
+class BehaviorInheritanceTest : public BehaviorTest
+{
+public:
+	void INITALIZE_COMPONENT()
+	{
+		host_type = this;
+		type_name = typeid(this).name();
+		id = ActiveBehaviors.size();
+		init_behavior;
+	}
+
+	void PreUpdate()
+	{
+		std::cout << "inheritance pre update works" << std::endl;
+	}
+
+	void Update()
+	{
+		std::cout << "inheritance update works" << std::endl;
+		if (c >= 100)
+		{
+			RequestDestroy();
+		}
+	}
+
+	void GetComponentWorksCheck()
+	{
+		std::cout << "inheritance get component works" << std::endl;
+	}
+
+	void LateUpdate()
+	{
+		c++;
+		std::cout << "inheritance late update works" << std::endl;
 	}
 };
 
