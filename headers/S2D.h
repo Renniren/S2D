@@ -101,7 +101,7 @@ enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
 
 enum DrawMode { DrawWhenLevelActive, DrawAlways, DontDraw };
 
-enum LoadLevelType {Override, Background};
+enum LoadLevelType { Override, Background };
 
 struct Vector2
 {
@@ -246,21 +246,10 @@ public:
 	}
 };
 
-class object
-{
-public:
-	int instance_id;
-
-	virtual std::string to_string()
-	{
-		return "";
-	}
-};
-
 class Updatable
 {
 public:
-	SimulationMode flags = SimulationMode::SimulateOnlyWhenLevelActive;
+	SimulationMode flags = SimulateOnlyWhenLevelActive;
 
 	bool u_active;
 	virtual void update() {}
@@ -1271,7 +1260,7 @@ public:
 	}
 };
 
-class TestPlayer : public GameObject, public object
+class TestPlayer : public GameObject
 {
 public:
 	float speed = 40.0f;

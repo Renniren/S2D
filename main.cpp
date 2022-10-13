@@ -75,8 +75,8 @@ int main()
 
 		RunDestroyTest();
 		if(doClear) S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
-		GameObject::ManageDestroyRequests();
 		Behavior::ManageDestroyRequests();
+		GameObject::ManageDestroyRequests();
 		UpdateEngine();
 		S2DRuntime::Instance->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
