@@ -41,7 +41,10 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define init_gameobject ActiveObjects.push_back(new GameObject::GameObjectInstance(this))
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
+
 #define INITALIZE_COMPONENT Initialize
+#define UNGROUPED -1
+
 #define TOO_MANY_TEXTURES TextureManager::LoadedTextures.size() >= 256
 #define S2D_DEBUG 1
 #define S2D_RELEASE 0
@@ -483,21 +486,21 @@ public:
 	GameObjectSprite sprite;
 	std::string name;
 	
-	float mass = 1;
-	float drag = 0;
+	float mass					= 1;
+	float drag					= 0;
 	float gravityInfluence = 1;
 
 	bool active;
-	bool isStatic = false;
-	bool hasPhysics = false;
-	bool respectsTime = true;
+	bool isStatic				= false;
+	bool hasPhysics			= false;
+	bool respectsTime		= true;
 	bool awaitingDestroy = false;
 
-	DrawMode drawMode = DrawMode::DrawWhenLevelActive;
+	DrawMode drawMode = DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
-	sf::Vector2f velocity;
+	Vector2							velocity;
 	
-	int id;
+	int id = 0, group = UNGROUPED;
 	float rotation;
 	
 	struct GameObjectInstance
@@ -515,6 +518,8 @@ public:
 
 	static std::vector<GameObjectInstance*> ActiveObjects;
 
+	//----------------------------------------------------
+
 	struct DestroyRequest
 	{
 	public:
@@ -526,7 +531,6 @@ public:
 			this->des = g;
 		}
 	};
-
 
 	static std::vector<DestroyRequest> DestroyRequests;
 
@@ -563,11 +567,7 @@ public:
 		RebuildDestroyRequestList();
 	}
 
-	template<typename t>
-	t GetComponent()
-	{
-
-	}
+	//----------------------------------------------------
 
 	void levelChanged()
 	{
@@ -627,17 +627,9 @@ public:
 		}
 	}
 
-	void draw()
+	void draw(bool forceDraw = false)
 	{
-		if (drawMode == DrawMode::DontDraw) return;
-		sprite.s.setPosition(position);
-		sprite.s.setRotation(rotation);
-		sprite.s.setScale(scale);
-		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
-	}
-
-	void forceDraw()
-	{
+		if (drawMode == DontDraw && !forceDraw) return;
 		sprite.s.setPosition(position);
 		sprite.s.setRotation(rotation);
 		sprite.s.setScale(scale);
@@ -706,13 +698,25 @@ public:
 
 	}
 
-
-
-
 	void MakeStandalone()
 	{
 		init_gameobject;
 	}
+
+	static GameObject* Spawn(Vector2 pos, float rotation = 0.0f, float spawnActive = true)
+	{
+		GameObject* r = new GameObject(spawnActive);
+		r->MakeStandalone();
+		return r;
+	}
+};
+
+struct Group
+{
+public:
+	int id;
+	Vector2 offset;
+	std::vector<GameObject*> objects;
 };
 
 //Behaviors act as hooks onto GameObjects in a way similar to Unity's MonoBehaviors.
@@ -725,7 +729,7 @@ public:
 	void* host_type;
 	std::string type_name;
 	GameObject* gameObject;
-	bool active;
+	bool enabled;
 	int id;
 	
 
@@ -827,30 +831,42 @@ public:
 
 	void PreTick()
 	{
+		if (!enabled)return;
 		PreUpdate();
 	}
 
 	void Tick()
 	{
+		if (!enabled)return;
 		Update();
 	}
 
 	void PhysicsTick()
 	{
+		if (!enabled)return;
 		PhysicsUpdate();
 	}
 
 	void PostTick()
 	{
+		if (!enabled)return;
 		LateUpdate();
 	}
 
+	void INITALIZE_COMPONENT(void* host)
+	{
+		host_type = host;
+		type_name = typeid(host).name();
+		id = ActiveBehaviors.size();
+		init_behavior;
+	}
 protected:
 
 	Behavior()
 	{
 		
 	}
+
 };
 
 class BehaviorTest : public Behavior
@@ -859,13 +875,7 @@ public:
 
 	int c;
 
-	void INITALIZE_COMPONENT()
-	{
-		host_type = this;
-		type_name = typeid(this).name();
-		id = ActiveBehaviors.size();
-		init_behavior;
-	}
+	
 
 	void PreUpdate()
 	{
@@ -896,13 +906,7 @@ public:
 class BehaviorInheritanceTest : public BehaviorTest
 {
 public:
-	void INITALIZE_COMPONENT()
-	{
-		host_type = this;
-		type_name = typeid(this).name();
-		id = ActiveBehaviors.size();
-		init_behavior;
-	}
+	
 
 	void PreUpdate()
 	{
@@ -934,7 +938,7 @@ template<typename T>
 T* AddComponent(GameObject to)
 {
 	T* c = new T();
-	c->INITALIZE_COMPONENT();
+	c->INITALIZE_COMPONENT(c);
 	c->gameObject = &to;
 	return c;
 }
@@ -1338,6 +1342,9 @@ public:
 void UpdateEngine()
 {
 	time::update();
+	Behavior::ManageDestroyRequests();
+	GameObject::ManageDestroyRequests();
+
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
 
@@ -1356,6 +1363,9 @@ void UpdateEngine()
 
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
+
+	Behavior::ManageDestroyRequests();
+	GameObject::ManageDestroyRequests();
 }
 
 void InitializeEngine()

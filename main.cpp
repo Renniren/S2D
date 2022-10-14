@@ -39,6 +39,17 @@ void RunDestroyTest()
 	}
 }
 
+bool SaveLevel()
+{
+	//Here, a C# program will be called to convert our level to a JSON file since C++ can't do that for us.
+	//For later reference: 
+	//https://stackoverflow.com/questions/14821787/c-program-to-execute-another-program-with-command-line-arguments
+	// https://gotask.net/programming/serialize-and-deserialize-object-in-cpp-using-rapidjson/
+	// https://github.com/eyalmolad/gotask/blob/master/C%2B%2B/RapidJSONSample/DataSample.json
+	//system("ProjectPath\\Converter.exe\\" + Arguments)
+	
+}
+
 int main()
 {
 	using namespace std;
@@ -56,7 +67,7 @@ int main()
 	AddComponent<BehaviorInheritanceTest>(cam);
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 
-	float f = 0;
+	float f = 0, total = 0;
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
@@ -66,18 +77,20 @@ int main()
 		}
 
 		f += time::delta;
+		total += time::delta;
 		if (f >= 3)
 		{
 			cout << time::delta << endl;
+			cout << total << endl;
 			cout << "3 seconds have passed" << endl;
 			f = 0;
 		}
 
 		RunDestroyTest();
-		if(doClear) S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
-		Behavior::ManageDestroyRequests();
-		GameObject::ManageDestroyRequests();
+		S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
+		
 		UpdateEngine();
+		
 		S2DRuntime::Instance->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
