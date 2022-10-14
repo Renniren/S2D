@@ -47,7 +47,7 @@ bool SaveLevel()
 	// https://gotask.net/programming/serialize-and-deserialize-object-in-cpp-using-rapidjson/
 	// https://github.com/eyalmolad/gotask/blob/master/C%2B%2B/RapidJSONSample/DataSample.json
 	//system("ProjectPath\\Converter.exe\\" + Arguments)
-	
+	return false;
 }
 
 int main()

@@ -9,6 +9,7 @@
 #include <random>
 #include<functional>
 #include <SFML/Graphics.hpp>
+#include <sstream>
 
 #ifndef GUARD_S2D_DEFINES
 #define GUARD_S2D_DEFINES
@@ -37,8 +38,12 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define MStaticDefinition(type, cls, name) type cls::name = type()
 #define MStaticPointerDefinition(type, cls) type cls::type = new type()
 
+#define REGISTER_CLASS static void RegisterClass
+
 #define Instantiate(x) new x()
-#define init_gameobject ActiveObjects.push_back(new GameObject::GameObjectInstance(this))
+#define init_gameobject \
+id = ActiveObjects.size();\
+ActiveObjects.push_back(new GameObject::GameObjectInstance(this));
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
 
@@ -81,6 +86,11 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 		res = false;
 	}
 	return false;
+}
+
+void error(const char* c)
+{
+	std::cout << "Error: " << c << std::endl;
 }
 
 void clamp(float& num, float&& lower, float&& upper)
@@ -148,10 +158,13 @@ public:
 
 	inline Vector2 operator * (float n)
 	{
-		this->x *= n;
-		this->x *= n;
-		return *this;
+		Vector2 r = Vector2(this->x, this->y);
+		r.x *= n;
+		r.x *= n;
+		return r;
 	}
+
+
 
 	inline Vector2 operator = (Vector2 n)
 	{
@@ -478,9 +491,10 @@ public:
 	}
 };
 
-class GameObject : public Updatable
+class GameObject 
 {
 public:
+	SimulationMode flags = SimulateOnlyWhenLevelActive;
 	Vector2 position, scale;
 	Level* parent_level;
 	GameObjectSprite sprite;
@@ -532,15 +546,15 @@ public:
 		}
 	};
 
-	static std::vector<DestroyRequest> DestroyRequests;
+	static std::vector<DestroyRequest*> DestroyRequests;
 
 	static void RebuildDestroyRequestList()
 	{
-		std::vector<DestroyRequest> old = std::vector<DestroyRequest>(DestroyRequests);
-		std::vector<DestroyRequest> _new = std::vector<DestroyRequest>();
+		std::vector<DestroyRequest*> old = std::vector<DestroyRequest*>(DestroyRequests);
+		std::vector<DestroyRequest*> _new = std::vector<DestroyRequest*>();
 		for (size_t i = 0; i < old.size(); i++)
 		{
-			if (!old[i].destroyed)
+			if (!old[i]->destroyed)
 			{
 				_new.push_back(old[i]);
 			}
@@ -551,20 +565,35 @@ public:
 
 	static void MakeDestroyRequest(GameObject* g)
 	{
-		DestroyRequests.push_back(DestroyRequest(g));
+		DestroyRequests.push_back(new DestroyRequest(g));
 	}
 
 	static void ManageDestroyRequests()
 	{
 		for (size_t i = 0; i < DestroyRequests.size(); i++)
 		{
-			if (DestroyRequests[i].des != nullptr)
+			if (DestroyRequests[i]->des != nullptr)
 			{
-				DestroyRequests[i].des->DestroyImmediate();
-				DestroyRequests[i].destroyed = true;
+				DestroyRequests[i]->des->DestroyImmediate();
+				DestroyRequests[i]->destroyed = true;
 			}
 		}
 		RebuildDestroyRequestList();
+	}
+
+	static GameObjectInstance* GetObject(int id)
+	{
+		using namespace std;
+		if (id >= ActiveObjects.size())
+		{
+			stringstream s;
+			s << "GameObject ID out of range: " << id << ", can't be higher than " << ActiveObjects.size() - 1;
+			error(s.str().c_str());
+			id = ActiveObjects.size() - 1;
+			if (id < 0) id = 0;
+		}
+
+		return ActiveObjects[id];
 	}
 
 	//----------------------------------------------------
@@ -600,18 +629,23 @@ public:
 		from happening.
 	*/
 
+	virtual void update() {}
+	virtual void post_update() {}
+	virtual void onDestroyed() {}
+
 	void RequestDestroy()
 	{
 		MakeDestroyRequest(this);
-		ActiveObjects[id]->destroyed = true;
+		GetObject(id)->destroyed = true;
 		awaitingDestroy = true;
-		destroyed();
+		onDestroyed();
+		//ManageDestroyRequests();
 	}
 
 	void DestroyImmediate()
 	{
 		active = false;
-		u_active = false;
+		//aau_active = false;
 		
 		TextureManager::CleanUpTexturePair(sprite.tsp_id);
 		delete this;
@@ -682,14 +716,12 @@ public:
 
 	void after_tick()
 	{
-		if (this == nullptr) return;
-		
-		post_update();
+
 	}
 
 	GameObject(bool setActive = true)
 	{
-		id = ActiveObjects.size();
+		
 		active = setActive;
 		parent_level = LevelManager::ActiveLevel;
 		rotation = 0;
@@ -869,97 +901,6 @@ protected:
 
 };
 
-class BehaviorTest : public Behavior
-{
-public:
-
-	int c;
-
-	
-
-	void PreUpdate()
-	{
-		std::cout << "pre update works" << std::endl;
-	}
-	
-	void Update()
-	{
-		std::cout << "update works" << std::endl;
-		if (c >= 100)
-		{
-			RequestDestroy();
-		}
-	}
-
-	void GetComponentWorksCheck()
-	{
-		std::cout << "get component works" << std::endl;
-	}
-
-	void LateUpdate()
-	{
-		c++;
-		std::cout << "late update works" << std::endl;
-	}
-};
-
-class BehaviorInheritanceTest : public BehaviorTest
-{
-public:
-	
-
-	void PreUpdate()
-	{
-		std::cout << "inheritance pre update works" << std::endl;
-	}
-
-	void Update()
-	{
-		std::cout << "inheritance update works" << std::endl;
-		if (c >= 100)
-		{
-			RequestDestroy();
-		}
-	}
-
-	void GetComponentWorksCheck()
-	{
-		std::cout << "inheritance get component works" << std::endl;
-	}
-
-	void LateUpdate()
-	{
-		c++;
-		std::cout << "inheritance late update works" << std::endl;
-	}
-};
-
-template<typename T>  
-T* AddComponent(GameObject to)
-{
-	T* c = new T();
-	c->INITALIZE_COMPONENT(c);
-	c->gameObject = &to;
-	return c;
-}
-
-template<typename T>
-T* GetComponent(GameObject* on)
-{
-	std::string desired_type = typeid(T).name();
-	for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
-	{
-		if (Behavior::ActiveBehaviors[i]->b->gameObject == on)
-		{
-			if (Behavior::ActiveBehaviors[i]->b->type_name == desired_type)
-			{
-				return (T*)Behavior::ActiveBehaviors[i]->b->host_type;
-			}
-		}
-	}
-	return nullptr;
-}
-
 class Camera : public GameObject
 {
 public:
@@ -1006,7 +947,8 @@ public:
 	Particle(float l) : GameObject(true)
 	{
 		init_gameobject;
-		l = lifetime;
+		name = "Particle";
+		lifetime = l;
 		p = 0;
 	}
 
@@ -1097,6 +1039,73 @@ public:
 	}
 };
 
+//Test Classes -----------
+
+class BehaviorTest : public Behavior
+{
+public:
+
+	int c;
+
+	
+
+	void PreUpdate()
+	{
+		std::cout << "pre update works" << std::endl;
+	}
+	
+	void Update()
+	{
+		std::cout << "update works" << std::endl;
+		if (c >= 100)
+		{
+			RequestDestroy();
+		}
+	}
+
+	void GetComponentWorksCheck()
+	{
+		std::cout << "get component works" << std::endl;
+	}
+
+	void LateUpdate()
+	{
+		c++;
+		std::cout << "late update works" << std::endl;
+	}
+};
+
+class BehaviorInheritanceTest : public BehaviorTest
+{
+public:
+	
+
+	void PreUpdate()
+	{
+		std::cout << "inheritance pre update works" << std::endl;
+	}
+
+	void Update()
+	{
+		std::cout << "inheritance update works" << std::endl;
+		if (c >= 100)
+		{
+			RequestDestroy();
+		}
+	}
+
+	void GetComponentWorksCheck()
+	{
+		std::cout << "inheritance get component works" << std::endl;
+	}
+
+	void LateUpdate()
+	{
+		c++;
+		std::cout << "inheritance late update works" << std::endl;
+	}
+};
+
 class ClassUpdater
 {
 public:
@@ -1137,10 +1146,6 @@ public:
 			{
 				_new.push_back(old[i]);
 			}
-			else
-			{
-				delete old[i];
-			}
 		}
 
 		GameObject::ActiveObjects = _new;
@@ -1171,7 +1176,7 @@ public:
 	{
 		for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
 		{
-			if (GameObject::ActiveObjects[i] == nullptr)
+			if (GameObject::ActiveObjects[i] == nullptr || GameObject::ActiveObjects[i]->destroyed)
 			{
 				continue;
 			}
@@ -1223,7 +1228,7 @@ public:
 	{
 		for (size_t i = 0; i < GameObject::ActiveObjects.size(); i++)
 		{
-			if (GameObject::ActiveObjects[i] == nullptr)
+			if (GameObject::ActiveObjects[i] == nullptr || GameObject::ActiveObjects[i]->destroyed)
 			{
 				continue;
 			}
@@ -1339,6 +1344,8 @@ public:
 	}
 };
 
+//------------------------
+
 void UpdateEngine()
 {
 	time::update();
@@ -1391,6 +1398,33 @@ void InitializeEngine()
 	}
 }
 
+template<typename T>  
+T* AddComponent(GameObject to)
+{
+	T* c = new T();
+	c->INITALIZE_COMPONENT(c);
+	c->enabled = true;
+	c->gameObject = &to;
+	return c;
+}
+
+template<typename T>
+T* GetComponent(GameObject* on)
+{
+	std::string desired_type = typeid(T).name();
+	for (size_t i = 0; i < Behavior::ActiveBehaviors.size(); i++)
+	{
+		if (Behavior::ActiveBehaviors[i]->b->gameObject == on)
+		{
+			if (Behavior::ActiveBehaviors[i]->b->type_name == desired_type)
+			{
+				return (T*)Behavior::ActiveBehaviors[i]->b->host_type;
+			}
+		}
+	}
+	return nullptr;
+}
+
 float			time::Scale						= 1;
 float			time::delta						= 0,
 				time::physicsDelta				= 0.02f,
@@ -1409,7 +1443,7 @@ Vector2 Physics::Gravity = Vector2(0, 9.81f);
 
 S2DRuntime* S2DRuntime::Instance = nullptr;
 
-MStaticDefinition(std::vector<GameObject::DestroyRequest>, GameObject, DestroyRequests);
+MStaticDefinition(std::vector<GameObject::DestroyRequest*>, GameObject, DestroyRequests);
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
 MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
 MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
