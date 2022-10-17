@@ -42,7 +42,6 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 
 #define Instantiate(x) new x()
 #define init_gameobject \
-id = ActiveObjects.size();\
 ActiveObjects.push_back(new GameObject::GameObjectInstance(this));
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
@@ -522,11 +521,14 @@ public:
 	public:
 		GameObject* obj;
 		bool destroyed;
+		int id;
 
 		GameObjectInstance(GameObject* g)
 		{
 			this->obj = g;
 			this->destroyed = false;
+			this->id = random((int)0, (int)INT_MAX);
+			g->id = id;
 		}
 	};
 
@@ -578,22 +580,33 @@ public:
 				DestroyRequests[i]->destroyed = true;
 			}
 		}
+
 		RebuildDestroyRequestList();
 	}
 
 	static GameObjectInstance* GetObject(int id)
 	{
 		using namespace std;
-		if (id >= ActiveObjects.size())
+		/*
+			if (id >= ActiveObjects.size())
+			{
+				stringstream s;
+				s << "GameObject ID out of range: " << id << ", can't be higher than " << ActiveObjects.size() - 1;
+				error(s.str().c_str());
+				id = ActiveObjects.size() - 1;
+				if (id < 0) id = 0;
+			}
+		*/
+
+		for (size_t i = 0; i < ActiveObjects.size(); i++)
 		{
-			stringstream s;
-			s << "GameObject ID out of range: " << id << ", can't be higher than " << ActiveObjects.size() - 1;
-			error(s.str().c_str());
-			id = ActiveObjects.size() - 1;
-			if (id < 0) id = 0;
+			if (ActiveObjects[i]->id == id)
+			{
+				return ActiveObjects[i];
+			}
 		}
 
-		return ActiveObjects[id];
+		return nullptr;
 	}
 
 	//----------------------------------------------------
