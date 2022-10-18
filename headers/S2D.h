@@ -527,10 +527,13 @@ public:
 		{
 			this->obj = g;
 			this->destroyed = false;
-			this->id = random((int)0, (int)INT_MAX);
+			this->obj->instance = this;
+			this->id = random((int)0, (int)INT_MAX - 500);
 			g->id = id;
 		}
 	};
+
+	GameObjectInstance* instance;
 
 	static std::vector<GameObjectInstance*> ActiveObjects;
 
