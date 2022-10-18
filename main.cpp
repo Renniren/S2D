@@ -74,6 +74,7 @@ int main()
 		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
 		{ 
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
+			//if (event.type == sf::Event::Resized) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
 
 		f += time::delta;

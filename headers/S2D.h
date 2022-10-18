@@ -119,6 +119,7 @@ struct Vector2
 {
 public:
 	float x, y;
+	static Vector2 zero;
 
 	static float Distance(Vector2 a, Vector2 b)
 	{
@@ -128,6 +129,12 @@ public:
 	float Distance(Vector2 b)
 	{
 		return sqrt(pow(this->x - b.x, 2) + pow(this->y - b.y, 2));
+	}
+
+	void Zero()
+	{
+		x = 0;
+		y = 0;
 	}
 
 	Vector2()
@@ -159,7 +166,7 @@ public:
 	{
 		Vector2 r = Vector2(this->x, this->y);
 		r.x *= n;
-		r.x *= n;
+		r.y *= n;
 		return r;
 	}
 
@@ -624,13 +631,13 @@ public:
 		if (!hasPhysics) return;
 		if (respectsTime)
 		{
-			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta * time::Scale;
-			position += velocity * time::physicsDelta * time::Scale;
+			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta * time::Scale;
+			position += velocity * (time::delta * 100);
 		}
 		else
 		{
-			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::physicsDelta;
-			position += velocity * time::physicsDelta;
+			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta;
+			position += velocity * (time::delta * 100);
 		}
 	}
 
@@ -1283,6 +1290,17 @@ public:
 		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("sprites\\circle.png");
 	}
+
+	void update()
+	{
+		using namespace std;
+			//cout << position.y << endl;
+		if (position.y > 600)
+		{
+			position.y = -600;
+			velocity.Zero();
+		}
+	}
 };
 
 class TestPlayer : public GameObject
@@ -1456,6 +1474,8 @@ std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
 Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
 Vector2 Physics::Gravity = Vector2(0, 9.81f);
+Vector2 Vector2::zero = Vector2(0, 0);
+
 
 S2DRuntime* S2DRuntime::Instance = nullptr;
 
