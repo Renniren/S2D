@@ -39,13 +39,13 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 #define MStaticPointerDefinition(type, cls) type cls::type = new type()
 
 #define REGISTER_CLASS static void RegisterClass
-
 #define Instantiate(x) new x()
 #define init_gameobject \
 ActiveObjects.push_back(new GameObject::GameObjectInstance(this));
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
-
+#define debug_log(x)\
+std::cout << x << std::endl
 #define INITALIZE_COMPONENT Initialize
 #define UNGROUPED -1
 
@@ -90,6 +90,13 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 void error(const char* c)
 {
 	std::cout << "Error: " << c << std::endl;
+}
+
+void s2dlog(void* txt, bool newline = true)
+{
+	using namespace std;
+	cout << *&txt;
+	if (newline) cout << endl;
 }
 
 void clamp(float& num, float&& lower, float&& upper)
@@ -421,7 +428,10 @@ public:
 
 	static void init()
 	{
+		static bool n = false;
+		if (n) return;
 		global_clock = sf::Clock();
+		n = true;
 	}
 
 	static void update()
@@ -632,7 +642,7 @@ public:
 		if (respectsTime)
 		{
 			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta * time::Scale;
-			position += velocity * (time::delta * 100);
+			position += velocity * (time::delta * 100) * time::Scale;
 		}
 		else
 		{
@@ -1306,7 +1316,7 @@ public:
 class TestPlayer : public GameObject
 {
 public:
-	float speed = 40.0f;
+	float speed = 100.0f;
 
 	TestPlayer() : GameObject(true)
 	{
@@ -1333,7 +1343,8 @@ public:
 	void update()
 	{
 		using namespace sf;
-		
+		using namespace std;
+
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
 			position.y -= speed * time::deltaUnscaled;
@@ -1350,7 +1361,7 @@ public:
 
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
-			position.x += speed * time::delta;
+			position.x += speed * time::deltaUnscaled;
 		}
 
 		if (Keyboard::isKeyPressed(Keyboard::X))
@@ -1360,15 +1371,21 @@ public:
 		}
 
 
-		float incr = 0.02f;
+		float incr = 2.0f;
 		if (Keyboard::isKeyPressed(Keyboard::R))
 		{
 			time::Scale += incr * time::deltaUnscaled;
+			debug_log(time::Scale);
+			//s2dlog(&time::Scale, true);
+			//cout << time::Scale << endl;
 		}
 
 		if (Keyboard::isKeyPressed(Keyboard::T))
 		{
 			time::Scale -= incr * time::deltaUnscaled;
+			debug_log(time::Scale);
+			//s2dlog(&time::Scale, true);
+			//cout << time::Scale << endl;
 		}
 
 		if (isKeyPressedTap(Keyboard::Y))
