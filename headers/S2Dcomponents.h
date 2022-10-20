@@ -96,6 +96,8 @@ class Particle : public GameObject
 	float p;
 public:
 	float lifetime;
+	Vector2 velocity;
+	float angularVelocity;
 
 	Particle(float l) : GameObject(true)
 	{
@@ -175,6 +177,29 @@ public:
 		}
 	}
 };
+
+class Rigidbody : public Behavior
+{
+public:
+	Vector2 velocity;
+	float angularVelocity;
+	float mass;
+
+	Rigidbody()
+	{
+		velocity = Vector2::zero;
+		angularVelocity = 0;
+		
+	}
+
+	void Update()
+	{
+
+	}
+};
+
+MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
+MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
 
 
 #endif // !S2D_INTENRAL_COMPONENTS
