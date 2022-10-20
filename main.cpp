@@ -1,4 +1,4 @@
-#include "S2D.h"
+#include "S2Dinternal.h"
 #include <time.h>       /* time */
 #include<process.h>
 
@@ -88,7 +88,7 @@ int main()
 		}
 
 		RunDestroyTest();
-		S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->world_settings.clear_color);
+		S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->level->world_settings.clear_color);
 		
 		UpdateEngine();
 		
