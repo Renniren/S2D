@@ -317,10 +317,16 @@
     <ClInclude Include="headers\SFML\Window\WindowStyle.hpp">
       <Filter>Header Files\SFML</Filter>
     </ClInclude>
-    <ClInclude Include="headers\S2D.h">
+    <ClInclude Include="headers\S2Dinternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\S2Ddefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\S2Dcomponents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\S2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

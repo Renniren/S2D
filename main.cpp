@@ -1,4 +1,4 @@
-#include "S2D.h"
+#include "S2Dinternal.h"
 #include <time.h>       /* time */
 #include<process.h>
 

@@ -158,6 +158,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\S2D.h" />
+    <ClInclude Include="headers\S2Dinternal.h" />
+    <ClInclude Include="headers\S2Dcomponents.h" />
     <ClInclude Include="headers\S2Ddefines.h" />
     <ClInclude Include="headers\SFML\Audio.hpp" />
     <ClInclude Include="headers\SFML\Audio\AlResource.hpp" />
