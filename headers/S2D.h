@@ -87,7 +87,7 @@ bool isKeyPressedTap(sf::Keyboard::Key query)
 	return false;
 }
 
-void error(const char* c)
+void s2derror(const char* c)
 {
 	std::cout << "Error: " << c << std::endl;
 }
@@ -111,7 +111,7 @@ void clamp(int& num, int lower, int upper)
 	if (num > upper) num = upper;
 }
 
-float random(float Min, float Max)
+float s2random(float Min, float Max)
 {
 	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
 }
@@ -348,11 +348,11 @@ public:
 class LevelInstance
 {
 public:
-	Level* instanceOf;
+	Level* level;
 	b2World* physicsWorld = nullptr;
 	LevelInstance(Level* levelToInstance)
 	{
-		this->instanceOf = levelToInstance;
+		this->level = levelToInstance;
 		physicsWorld = new b2World(Physics::Gravity);
 	}
 };
@@ -379,9 +379,9 @@ public:
 class LevelManager
 {
 public:
-	static Level* DefaultLevel;
-	static Level* ActiveLevel;
-	std::vector<Level*>LoadedLevels = std::vector<Level*>();
+	static LevelInstance* DefaultLevel;
+	static LevelInstance* ActiveLevel;
+	std::vector<LevelInstance*>LoadedLevels = std::vector<LevelInstance*>();
 	
 	void LoadLevel(Level level, LoadLevelType mode = LoadLevelType::Override)
 	{
@@ -406,9 +406,9 @@ public:
 		}
 		if (ActiveLevel != nullptr)
 		{
-			if (destination->name != ActiveLevel->name)
+			if (destination->name != ActiveLevel->level->name)
 			{
-				ActiveLevel = destination;
+				ActiveLevel = new LevelInstance(destination);
 			}
 		}
 	}
@@ -512,7 +512,7 @@ class GameObject
 public:
 	SimulationMode flags = SimulateOnlyWhenLevelActive;
 	Vector2 position, scale;
-	Level* parent_level;
+	LevelInstance* parent_level;
 	GameObjectSprite sprite;
 	std::string name;
 	
@@ -532,6 +532,7 @@ public:
 	
 	int id = 0, group = UNGROUPED;
 	float rotation;
+	float angularVelocity;
 	
 	struct GameObjectInstance
 	{
@@ -643,11 +644,14 @@ public:
 		{
 			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta * time::Scale;
 			position += velocity * (time::delta * 100) * time::Scale;
+			angularVelocity += -angularVelocity * 0.02f;
+			rotation += angularVelocity * (time::delta * 100) * time::Scale;
 		}
 		else
 		{
 			velocity -= (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta;
 			position += velocity * (time::delta * 100);
+			rotation += angularVelocity * (time::delta * 100);
 		}
 	}
 
@@ -717,7 +721,7 @@ public:
 			break;
 
 		case SimulateOnlyWhenLevelActive:
-			if (parent_level->name == LevelManager::ActiveLevel->name)
+			if (parent_level->level->name == LevelManager::ActiveLevel->level->name)
 			{
 				checkSceneValid();
 				updatePhysics();
@@ -736,7 +740,7 @@ public:
 			break;
 
 		case DrawMode::DrawWhenLevelActive:
-			if (parent_level->name == LevelManager::ActiveLevel->name)
+			if (parent_level->level->name == LevelManager::ActiveLevel->level->name)
 			{
 				if (&sprite.s != nullptr)
 				{
@@ -1020,36 +1024,20 @@ public:
 
 	void emit(int amt = 1)
 	{
-		if (amt == 1)
+		for (size_t i = 0; i < amt; i++)
 		{
 			Particle* particle = new Particle(lifetime);
 			particle->position = position;
 
-			particle->velocity += sf::Vector2f(random(-speed, speed),
-				random(-speed, speed));
+			particle->velocity += sf::Vector2f(s2random(-speed, speed),
+				s2random(-speed, speed));
+			particle->angularVelocity += s2random(-10, 10);
 			particle->active = true;
 			particle->hasPhysics = true;
 			particle->sprite = sprite;
 			particle->scale = sf::Vector2f(0.02f, 0.02f);
 			particle->drawMode = DrawWhenLevelActive;
 			particles.push_back(particle);
-		}
-		else if (amt > 1)
-		{
-			for (size_t i = 0; i < amt; i++)
-			{
-				Particle* particle = new Particle(lifetime);
-				particle->position = position;
-
-				particle->velocity += sf::Vector2f(random(-speed, speed),
-					random(-speed, speed));
-				particle->active = true;
-				particle->hasPhysics = true;
-				particle->sprite = sprite;
-				particle->scale = sf::Vector2f(0.02f, 0.02f);
-				particle->drawMode = DrawWhenLevelActive;
-				particles.push_back(particle);
-			}
 		}
 	}
 
@@ -1397,9 +1385,27 @@ public:
 
 //------------------------
 
+void UpdatePhysics(LevelInstance* inLevel)
+{
+	using namespace std;
+	LevelInstance* L = inLevel;
+	if (L->physicsWorld == nullptr)
+	{
+		stringstream s;
+		s << "Level " << L->level->name << " does not have a Physics World. ";
+		s2derror(s.str().c_str());
+	}
+
+	for (size_t i = 0; i < 60; i++)
+	{
+		L->physicsWorld->Step(time::physicsDelta, 20, 20);
+	}
+}
+
 void UpdateEngine()
 {
 	time::update();
+	UpdatePhysics(LevelManager::ActiveLevel);
 	Behavior::ManageDestroyRequests();
 	GameObject::ManageDestroyRequests();
 
@@ -1424,6 +1430,7 @@ void UpdateEngine()
 
 	Behavior::ManageDestroyRequests();
 	GameObject::ManageDestroyRequests();
+	UpdatePhysics(LevelManager::ActiveLevel);
 }
 
 void InitializeEngine()
@@ -1445,7 +1452,7 @@ void InitializeEngine()
 
 	if (S2DRuntime::Instance->release_mode == S2D_DEBUG)
 	{
-		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->world_settings.name);
+		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->level->world_settings.name);
 	}
 }
 
@@ -1488,8 +1495,8 @@ sf::Clock	time::global_clock	= sf::Clock();
 std::vector<GameObject::GameObjectInstance*> GameObject::ActiveObjects = std::vector<GameObject::GameObjectInstance*>();
 std::vector<Updatable*> Updatable::UpdatableObjects = std::vector<Updatable*>();
 
-Level* LevelManager::DefaultLevel = new Level(std::string("Default Level"), World("World", sf::Color::Black));
-Level* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
+LevelInstance* LevelManager::DefaultLevel = new LevelInstance(new Level(std::string("Default Level"), World("World", sf::Color::Black)));
+LevelInstance* LevelManager::ActiveLevel = LevelManager::DefaultLevel;
 Vector2 Physics::Gravity = Vector2(0, 9.81f);
 Vector2 Vector2::zero = Vector2(0, 0);
 
