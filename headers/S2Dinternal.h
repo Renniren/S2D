@@ -797,8 +797,11 @@ private:
 public:
 	void* host_type;
 	std::string type_name;
-	GameObject* gameObject;
+	GameObject* gameObject = nullptr;
+	LevelInstance* ParentLevel;
 	bool enabled;
+	bool requireGameObject = true;
+	bool RunsInBackground = false;
 	int id;
 	
 
@@ -898,27 +901,39 @@ public:
 		Start();
 	}
 
+	bool CanUpdate()
+	{
+		if (!enabled)return false;
+		if (gameObject == nullptr && requireGameObject)return false;
+		if (!RunsInBackground && (ParentLevel != gameObject->parent_level )) return false;
+		return true;
+	}
+
 	void PreTick()
 	{
-		if (!enabled)return;
+		if (!CanUpdate()) return;
+		if (gameObject != NULL) ParentLevel = gameObject->parent_level;
 		PreUpdate();
 	}
 
 	void Tick()
 	{
-		if (!enabled)return;
+		if (!CanUpdate()) return;
+		if (gameObject != NULL) ParentLevel = gameObject->parent_level;
 		Update();
 	}
 
 	void PhysicsTick()
 	{
-		if (!enabled)return;
+		if (!CanUpdate()) return;
+		if(gameObject != NULL) ParentLevel = gameObject->parent_level;
 		PhysicsUpdate();
 	}
 
 	void PostTick()
 	{
-		if (!enabled)return;
+		if (!CanUpdate()) return;
+		if (gameObject != NULL) ParentLevel = gameObject->parent_level;
 		LateUpdate();
 	}
 
@@ -929,6 +944,18 @@ public:
 		id = ActiveBehaviors.size();
 		init_behavior;
 	}
+
+	//Making a Behavior stand-alone will allow it to operate on its own 
+	void MakeStandalone()
+	{
+		requireGameObject = false;
+	}
+
+	void SetParent(GameObject* obj)
+	{
+		gameObject = obj;
+	}
+
 protected:
 
 	Behavior()
@@ -1329,7 +1356,5 @@ S2DRuntime* S2DRuntime::Instance = nullptr;
 
 MStaticDefinition(std::vector<GameObject::DestroyRequest*>, GameObject, DestroyRequests);
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
-MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
-MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
 
 #endif

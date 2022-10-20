@@ -1,4 +1,4 @@
-#include "S2Dinternal.h"
+#include "S2D.h"
 #include <time.h>       /* time */
 #include<process.h>
 
@@ -68,6 +68,12 @@ int main()
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 
 	float f = 0, total = 0;
+
+	int x = 2;
+	int y = 6;
+	int xy = x | y;
+	cout << xy << endl;
+
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
