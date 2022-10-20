@@ -111,7 +111,7 @@ void clamp(int& num, int lower, int upper)
 	if (num > upper) num = upper;
 }
 
-float random(float Min, float Max)
+float s2_random(float Min, float Max)
 {
 	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
 }
@@ -502,7 +502,8 @@ public:
 		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, sf::Sprite());
 		ret = new sf::Sprite(*texture);
 		S2DTextureSpritePair s = CreateTexturePair(texture, ret);
-		ret->setOrigin(0.25f, 0.25f);
+		ret->setOrigin(Vector2(ret->getLocalBounds().left / 2, ret->getLocalBounds().top / 2));
+		//ret->setOrigin(0.5f, 0.5f);
 		return GameObjectSprite(s.id, *ret);
 	}
 };
@@ -529,6 +530,7 @@ public:
 	DrawMode drawMode = DrawWhenLevelActive;
 	Physics::collisionShape CollisionShape;
 	Vector2							velocity;
+	float									angularVelocity;
 	
 	int id = 0, group = UNGROUPED;
 	float rotation;
@@ -643,6 +645,8 @@ public:
 		{
 			velocity += (sf::Vector2f)Physics::Gravity * gravityInfluence * time::delta * time::Scale;
 			position += velocity * (time::delta * 100) * time::Scale;
+			rotation += angularVelocity * (time::delta * 100) * time::Scale;
+			angularVelocity += -(angularVelocity * 0.02f) * (time::delta * 100) * time::Scale;;
 		}
 		else
 		{
@@ -694,12 +698,19 @@ public:
 		}
 	}
 
+	sf::CircleShape* debug_circle;
 	void draw(bool forceDraw = false)
 	{
 		if (drawMode == DontDraw && !forceDraw) return;
-		sprite.s.setPosition(position);
-		sprite.s.setRotation(rotation);
 		sprite.s.setScale(scale);
+		sprite.s.setRotation(rotation);
+		sprite.s.setPosition(position);
+		
+		debug_circle->setPosition(sprite.s.getOrigin());
+		
+		S2DRuntime::get()->GAME_WINDOW->draw(*debug_circle);
+		
+		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
 		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
 	}
 
@@ -760,7 +771,8 @@ public:
 		rotation = 0;
 		position = sf::Vector2f(0, 0);
 		name = "new WorldObject";
-
+		debug_circle = new sf::CircleShape(10.0f);
+		debug_circle->setFillColor(sf::Color(100, 250, 50));
 	}
 
 	void MakeStandalone()
@@ -1020,36 +1032,20 @@ public:
 
 	void emit(int amt = 1)
 	{
-		if (amt == 1)
+		for (size_t i = 0; i < amt; i++)
 		{
 			Particle* particle = new Particle(lifetime);
 			particle->position = position;
 
-			particle->velocity += sf::Vector2f(random(-speed, speed),
-				random(-speed, speed));
+			particle->velocity += sf::Vector2f(s2_random(-speed, speed),
+				s2_random(-speed, speed));
+			particle->angularVelocity += s2_random(-20, 20);
 			particle->active = true;
 			particle->hasPhysics = true;
 			particle->sprite = sprite;
 			particle->scale = sf::Vector2f(0.02f, 0.02f);
 			particle->drawMode = DrawWhenLevelActive;
 			particles.push_back(particle);
-		}
-		else if (amt > 1)
-		{
-			for (size_t i = 0; i < amt; i++)
-			{
-				Particle* particle = new Particle(lifetime);
-				particle->position = position;
-
-				particle->velocity += sf::Vector2f(random(-speed, speed),
-					random(-speed, speed));
-				particle->active = true;
-				particle->hasPhysics = true;
-				particle->sprite = sprite;
-				particle->scale = sf::Vector2f(0.02f, 0.02f);
-				particle->drawMode = DrawWhenLevelActive;
-				particles.push_back(particle);
-			}
 		}
 	}
 
