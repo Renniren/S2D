@@ -963,6 +963,7 @@ public:
 
 	void Tick()
 	{
+		//cunt
 		if (!CanUpdate()) return;
 		if (gameObject != NULL) ParentLevel = gameObject->parent_level;
 		Update();
