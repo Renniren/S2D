@@ -64,16 +64,28 @@ int main()
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
 	
-	BehaviorInheritanceTest* bh = AddComponent<BehaviorInheritanceTest>(cam);
-	cout << bh->HasParent() << endl;
-	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 
 	float f = 0, total = 0;
 
-	int x = 2;
-	int y = 6;
-	int xy = x | y;
-	cout << xy << endl;
+	//Vector2 e, g, d, a, c, b;
+	//e = Vector2(-1.5, 0.5f);
+	//g = Vector2(0, -1);
+
+	//d = Vector2(-3, 3);
+	//a = Vector2(-3, -2);
+	//c = Vector2(3, -2);
+	//b = Vector2(1, 3);
+
+	//cout << e.Distance(b) << endl;
+	//cout << e.Distance(a) << endl;
+	//cout << e.Distance(d) << endl;
+	//
+	//cout << g.Distance(b) << endl;
+	//cout << g.Distance(a) << endl;
+	//cout << g.Distance(c) << endl;
+	
+	BehaviorInheritanceTest* bh = AddComponent<BehaviorInheritanceTest>(cam);
+	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())

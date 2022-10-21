@@ -143,6 +143,7 @@ public:
 		debug_square->setFillColor(sf::Color(0, 255, 0, 100));
 	}
 
+
 	void DrawDebugShapes()
 	{
 		debug_circle->setPosition((Vector2)physicsBody->GetPosition());
@@ -159,7 +160,7 @@ public:
 			st = isStatic;
 			if (!st)
 			{
-				fixtureDef->density = 0;
+				fixtureDef->density = 5;
 				physicsBodyDefinition->type = b2_staticBody;
 			}
 
@@ -207,16 +208,114 @@ public:
 		physicsBody->GetAngularVelocity();
 	}
 
+	void MakeStatic()
+	{
+		SetLinearVelocity(Vector2::zero);
+		isStatic = true;
+		UpdateRigidbody();
+	}
+
 	void PreUpdate()
 	{
 		UpdateRigidbody();
-		//float ts = ((time::delta * 100) * time::Scale);
+		DrawDebugShapes();
+		if (!isStatic)
+		{
+			float ts = ((time::delta * 100) * time::Scale);
 
-		gameObject->position = physicsBody->GetPosition();
-		gameObject->rotation = physicsBody->GetAngle();
+			gameObject->position = physicsBody->GetPosition();
+			gameObject->rotation = physicsBody->GetAngle();
+			//gameObject->position += (Vector2)physicsBody->GetLinearVelocity() * ts;
+			//gameObject->rotation += physicsBody->GetAngularVelocity() * ts;
 
+		}	
 		physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
 		physicsBodyDefinition->angle = gameObject->rotation;
+	}
+};
+
+
+class TestPlayer : public GameObject
+{
+public:
+	float speed = 100.0f;
+	Rigidbody* body;
+	TestPlayer() : GameObject(true)
+	{
+		init_gameobject
+			scale = sf::Vector2f(0.03, 0.03);
+		sprite = TextureManager::CreateSprite("sprites\\square.png");
+		body = AddComponent<Rigidbody>(this);
+		body->gravityInfluence = 0;
+		//body->MakeStatic();
+	}
+
+	void onDestroyed()
+	{
+		printf("\nNOOOOOOOOOOOOoooooooo");
+	}
+
+	void post_update()
+	{
+		using namespace sf;
+		RectangleShape bb = RectangleShape(scale);
+		bb.setFillColor(Color(0, 255, 0, 200));
+		bb.setPosition(position);
+		S2DRuntime::get()->GAME_WINDOW->draw(bb);
+	}
+
+	void update()
+	{
+		using namespace sf;
+		using namespace std;
+
+		if (Keyboard::isKeyPressed(Keyboard::W))
+		{
+			position.y -= speed * time::deltaUnscaled;
+		}
+		if (Keyboard::isKeyPressed(Keyboard::S))
+		{
+			position.y += speed * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::A))
+		{
+			position.x -= speed * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::D))
+		{
+			position.x += speed * time::deltaUnscaled;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::X))
+		{
+			printf("test");
+			RequestDestroy();
+		}
+
+
+		float incr = 2.0f;
+		if (Keyboard::isKeyPressed(Keyboard::R))
+		{
+			time::Scale += incr * time::deltaUnscaled;
+			debug_log(time::Scale);
+			//s2dlog(&time::Scale, true);
+			//cout << time::Scale << endl;
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::T))
+		{
+			time::Scale -= incr * time::deltaUnscaled;
+			debug_log(time::Scale);
+			//s2dlog(&time::Scale, true);
+			//cout << time::Scale << endl;
+		}
+
+		if (isKeyPressedTap(Keyboard::Y))
+		{
+
+		}
 	}
 };
 
@@ -316,6 +415,7 @@ public:
 		}
 	}
 };
+
 
 
 
