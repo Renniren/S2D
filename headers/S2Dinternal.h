@@ -99,6 +99,7 @@ void s2dlog(void* txt, bool newline = true)
 	if (newline) cout << endl;
 }
 
+
 void clamp(float& num, float&& lower, float&& upper)
 {
 	if (num < lower) num = lower;
@@ -163,6 +164,18 @@ public:
 		this->y = d.y;
 	}
 
+	Vector2(const b2Vec2& d)
+	{
+		this->x = d.x;
+		this->y = d.y;
+	}
+
+	Vector2(const sf::Vector2f& d)
+	{
+		this->x = d.x;
+		this->y = d.y;
+	}
+
 	float magnitude()
 	{
 		return sqrt(pow(x, 2) + pow(y, 2));
@@ -176,8 +189,6 @@ public:
 		r.y *= n;
 		return r;
 	}
-
-
 
 	inline Vector2 operator = (Vector2 n)
 	{
@@ -216,6 +227,29 @@ public:
 		return *this;
 	}
 
+	inline Vector2 operator += (b2Vec2 other)
+	{
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
+	}
+
+	inline Vector2 operator + (sf::Vector2f other)
+	{
+		Vector2 r = Vector2(this->x, this->y);
+		r.x += other.x;
+		r.y += other.y;
+		return r;
+	}
+
+	inline Vector2 operator + (b2Vec2 other)
+	{
+		Vector2 r = Vector2(this->x, this->y);
+		r.x += other.x;
+		r.y += other.y;
+		return r;
+	}
+
 	inline Vector2 operator -= (sf::Vector2f other)
 	{
 		this->x -= other.x;
@@ -240,6 +274,12 @@ public:
 		return b2Vec2(this->x, this->y);
 	}
 };
+
+void s2dPrintVector2(Vector2 v)
+{
+	printf("\n(%4.2f %4.2f)", v.x, v.y);
+	printf("\n(%4.2f %4.2f)", v.x, v.y);
+}
 
 struct S2DTextureSpritePair
 {
@@ -797,7 +837,7 @@ private:
 public:
 	void* host_type;
 	std::string type_name;
-	GameObject* gameObject = nullptr;
+	GameObject* gameObject;
 	LevelInstance* ParentLevel;
 	bool enabled;
 	bool requireGameObject = true;
@@ -909,6 +949,11 @@ public:
 		return true;
 	}
 
+	bool HasParent()
+	{
+		return gameObject != nullptr;
+	}
+
 	void PreTick()
 	{
 		if (!CanUpdate()) return;
@@ -943,6 +988,11 @@ public:
 		type_name = typeid(host).name();
 		id = ActiveBehaviors.size();
 		init_behavior;
+
+		if (gameObject != nullptr)
+		{
+			ParentLevel = gameObject->parent_level;
+		}
 	}
 
 	//Making a Behavior stand-alone will allow it to operate on its own 
@@ -1234,7 +1284,7 @@ public:
 	}
 };
 
-//------------------------
+//------------------------s
 
 void UpdatePhysics(LevelInstance* inLevel)
 {
@@ -1247,41 +1297,36 @@ void UpdatePhysics(LevelInstance* inLevel)
 		s2derror(s.str().c_str());
 	}
 
-	for (size_t i = 0; i < 60; i++)
-	{
-		L->physicsWorld->Step(time::physicsDelta, 20, 20);
-	}
+	float ts = 1.0f / 13.0f;
+	L->physicsWorld->Step(ts, 20, 20);
 }
 
 void UpdateEngine()
 {
 	time::update();
+	LevelManager::ActiveLevel->physicsWorld->SetGravity(Physics::Gravity);
 	UpdatePhysics(LevelManager::ActiveLevel);
 	Behavior::ManageDestroyRequests();
 	GameObject::ManageDestroyRequests();
 
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
-
 	ClassUpdater::PreUpdateBehaviors();
 
 	ClassUpdater::UpdateUpdatables();
 	ClassUpdater::UpdateGameObjects();
 	ClassUpdater::UpdateBehaviors();
-
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
 
 	ClassUpdater::PostUpdateUpdatables();
 	ClassUpdater::PostUpdateGameObjects();
 	ClassUpdater::PostUpdateBehaviors();
-
 	ClassUpdater::RebuildGameObjectList();
 	ClassUpdater::RebuildBehaviorList();
 
 	Behavior::ManageDestroyRequests();
 	GameObject::ManageDestroyRequests();
-	UpdatePhysics(LevelManager::ActiveLevel);
 }
 
 void InitializeEngine()
@@ -1307,15 +1352,24 @@ void InitializeEngine()
 	}
 }
 
-template<typename T>  
-T* AddComponent(GameObject to)
+template<typename T>
+T* AddComponent(GameObject* to)
 {
 	T* c = new T();
-	c->INITALIZE_COMPONENT(c);
 	c->enabled = true;
-	c->gameObject = &to;
+	if (to == NULL)
+	{
+		std::stringstream ss;
+		ss << " Tried to add a component to a null GameObject.";
+		s2derror(ss.str().c_str());
+	}
+	c->gameObject = to->instance->obj;
+	c->INITALIZE_COMPONENT(c);
+	c->bStart();
 	return c;
 }
+
+
 
 template<typename T>
 T* GetComponent(GameObject* on)
@@ -1356,5 +1410,8 @@ S2DRuntime* S2DRuntime::Instance = nullptr;
 
 MStaticDefinition(std::vector<GameObject::DestroyRequest*>, GameObject, DestroyRequests);
 MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
+MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
+MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
+
 
 #endif
