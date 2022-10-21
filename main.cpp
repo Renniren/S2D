@@ -64,6 +64,7 @@ int main()
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
 	
+
 	AddComponent<BehaviorInheritanceTest>(cam);
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 
