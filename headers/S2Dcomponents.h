@@ -223,13 +223,15 @@ public:
 		{
 			float ts = ((time::delta * 100) * time::Scale);
 
-			gameObject->position = physicsBody->GetPosition();
-			gameObject->rotation = physicsBody->GetAngle();
-			//gameObject->position += (Vector2)physicsBody->GetLinearVelocity() * ts;
-			//gameObject->rotation += physicsBody->GetAngularVelocity() * ts;
-
+			//gameObject->position = physicsBody->GetPosition();
+			//gameObject->rotation = physicsBody->GetAngle();
+			gameObject->position += (Vector2)physicsBody->GetLinearVelocity();
+			gameObject->rotation += physicsBody->GetAngularVelocity() * ts;
+			physicsBody->SetLinearVelocity(gameObject->position - physicsBodyDefinition->position);
+			
 		}	
-		physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
+		//physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
+		physicsBodyDefinition->position = gameObject->position - physicsBodyDefinition->position;
 		physicsBodyDefinition->angle = gameObject->rotation;
 	}
 };
