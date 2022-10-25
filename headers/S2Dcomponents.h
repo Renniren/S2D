@@ -166,11 +166,11 @@ public:
 				*/
 
 				b2BodyDef groundBodyDef;
-				groundBodyDef.position.Set(0.0f, -10.0f);
+				groundBodyDef.position = gameObject->position;
 				b2Body* groundBody = ParentLevel->physicsWorld->CreateBody(&groundBodyDef);
 				b2PolygonShape groundBox;
 				groundBox.SetAsBox(50.0f, 10.0f);
-				groundBody->CreateFixture(&groundBox, 0.0f);
+				groundBody->CreateFixture(&groundBox, 1.0f);
 			}
 
 			if (!st)
