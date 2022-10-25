@@ -1218,36 +1218,39 @@ void UpdatePhysics(LevelInstance* inLevel)
 		s2derror(s.str().c_str());
 	}
 
-	float ts = 1.0f / 13.0f;
-	L->physicsWorld->Step(ts, 20, 20);
+	float ts = 1.0f / 60.0f;
+	L->physicsWorld->Step(ts, 50, 50);
 }
 
-void UpdateEngine()
+void UpdateEngine(int steps = 1)
 {
-	time::update();
-	LevelManager::ActiveLevel->physicsWorld->SetGravity(Physics::Gravity);
-	UpdatePhysics(LevelManager::ActiveLevel);
-	Behavior::ManageDestroyRequests();
-	GameObject::ManageDestroyRequests();
+	for (int i = 0; i < steps; i++)
+	{
+		time::update();
+		LevelManager::ActiveLevel->physicsWorld->SetGravity(Physics::Gravity);
+		UpdatePhysics(LevelManager::ActiveLevel);
+		Behavior::ManageDestroyRequests();
+		GameObject::ManageDestroyRequests();
 
-	ClassUpdater::RebuildGameObjectList();
-	ClassUpdater::RebuildBehaviorList();
-	ClassUpdater::PreUpdateBehaviors();
+		ClassUpdater::RebuildGameObjectList();
+		ClassUpdater::RebuildBehaviorList();
+		ClassUpdater::PreUpdateBehaviors();
 
-	ClassUpdater::UpdateUpdatables();
-	ClassUpdater::UpdateGameObjects();
-	ClassUpdater::UpdateBehaviors();
-	ClassUpdater::RebuildGameObjectList();
-	ClassUpdater::RebuildBehaviorList();
+		ClassUpdater::UpdateUpdatables();
+		ClassUpdater::UpdateGameObjects();
+		ClassUpdater::UpdateBehaviors();
+		ClassUpdater::RebuildGameObjectList();
+		ClassUpdater::RebuildBehaviorList();
 
-	ClassUpdater::PostUpdateUpdatables();
-	ClassUpdater::PostUpdateGameObjects();
-	ClassUpdater::PostUpdateBehaviors();
-	ClassUpdater::RebuildGameObjectList();
-	ClassUpdater::RebuildBehaviorList();
+		ClassUpdater::PostUpdateUpdatables();
+		ClassUpdater::PostUpdateGameObjects();
+		ClassUpdater::PostUpdateBehaviors();
+		ClassUpdater::RebuildGameObjectList();
+		ClassUpdater::RebuildBehaviorList();
 
-	Behavior::ManageDestroyRequests();
-	GameObject::ManageDestroyRequests();
+		Behavior::ManageDestroyRequests();
+		GameObject::ManageDestroyRequests();
+	}
 }
 
 void InitializeEngine()

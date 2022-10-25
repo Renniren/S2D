@@ -64,6 +64,15 @@ int main()
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
 	
+	GameObject* floor = new GameObject();
+	floor->MakeStandalone();
+	floor->sprite = TextureManager::CreateSprite("\\sprites\\square.png");
+	floor->position = Vector2(0, 50);
+	floor->scale = Vector2(100, 25);
+
+	Rigidbody* rb = AddComponent<Rigidbody>(floor);
+	rb->isStatic = true;
+	rb->UpdateRigidbody();
 
 	float f = 0, total = 0;
 
@@ -86,7 +95,7 @@ int main()
 	
 	BehaviorInheritanceTest* bh = AddComponent<BehaviorInheritanceTest>(cam);
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
-
+	bool st = false;
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
@@ -104,6 +113,19 @@ int main()
 			cout << total << endl;
 			cout << "3 seconds have passed" << endl;
 			f = 0;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::I))
+		{
+			if (!st)
+			{
+				UpdateEngine(60); // Simulate 60 frames of gameplay at once.
+				st = true;
+			}
+		}
+		else
+		{
+			st = false;
 		}
 
 		RunDestroyTest();
