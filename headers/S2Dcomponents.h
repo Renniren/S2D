@@ -117,11 +117,12 @@ public:
 		st = isStatic;
 
 		shape = new b2PolygonShape();
-		shape->SetAsBox(gameObject->scale.x / 2, gameObject->scale.y / 2, gameObject->position, gameObject->rotation);
+		shape->SetAsBox(gameObject->scale.x, gameObject->scale.y, gameObject->position, gameObject->rotation);
 		
 		physicsBodyDefinition = new b2BodyDef();
 		physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
 		physicsBodyDefinition->type = b2_dynamicBody;
+		physicsBody = ParentLevel->physicsWorld->CreateBody(physicsBodyDefinition);
 		
 		fixtureDef = new b2FixtureDef();
 		fixtureDef->shape = shape;
@@ -129,7 +130,6 @@ public:
 		fixtureDef->friction = 0.3f;
 		fixtureDef->restitution = 0.1f;
 
-		physicsBody = ParentLevel->physicsWorld->CreateBody(physicsBodyDefinition);
 		physicsBody->CreateFixture(fixtureDef);
 		physicsBody->SetGravityScale(1);
 
@@ -139,16 +139,15 @@ public:
 		debug_circle = new sf::CircleShape(4);
 		debug_circle->setFillColor(sf::Color(0, 255, 0, 100));
 
-		debug_square = new sf::RectangleShape(Vector2(gameObject->scale.x / 2, gameObject->scale.y / 2));
+		debug_square = new sf::RectangleShape(Vector2(gameObject->scale.x, gameObject->scale.y));
 		debug_square->setFillColor(sf::Color(0, 255, 0, 100));
 	}
 
 
 	void DrawDebugShapes()
 	{
-		debug_circle->setPosition((Vector2)physicsBody->GetPosition());
-		debug_square->setPosition((Vector2)physicsBody->GetPosition());
-
+		debug_circle->setPosition((Vector2)physicsBodyDefinition->position);
+		debug_square->setPosition((Vector2)physicsBodyDefinition->position);
 		S2DRuntime::get()->GAME_WINDOW->draw(*debug_circle);
 		S2DRuntime::get()->GAME_WINDOW->draw(*debug_square);
 	}
@@ -158,13 +157,23 @@ public:
 		if (st != isStatic)
 		{
 			st = isStatic;
-			if (!st)
+			if (st)
 			{
+				/*
 				fixtureDef->density = 5;
 				physicsBodyDefinition->type = b2_staticBody;
+				
+				*/
+
+				b2BodyDef groundBodyDef;
+				groundBodyDef.position.Set(0.0f, -10.0f);
+				b2Body* groundBody = ParentLevel->physicsWorld->CreateBody(&groundBodyDef);
+				b2PolygonShape groundBox;
+				groundBox.SetAsBox(50.0f, 10.0f);
+				groundBody->CreateFixture(&groundBox, 0.0f);
 			}
 
-			if (st)
+			if (!st)
 			{
 				fixtureDef->density = 1.0f;
 				physicsBodyDefinition->type = b2_dynamicBody;
@@ -221,17 +230,17 @@ public:
 		DrawDebugShapes();
 		if (!isStatic)
 		{
-			float ts = ((time::delta * 100) * time::Scale);
+			float ts = ((time::delta * 10) * time::Scale);
 
 			//gameObject->position = physicsBody->GetPosition();
 			//gameObject->rotation = physicsBody->GetAngle();
-			gameObject->position += (Vector2)physicsBody->GetLinearVelocity();
+			gameObject->position += velocity * ts;
 			gameObject->rotation += physicsBody->GetAngularVelocity() * ts;
-			physicsBody->SetLinearVelocity(gameObject->position - physicsBodyDefinition->position);
+			//physicsBody->SetLinearVelocity(gameObject->position - physicsBodyDefinition->position);
 			
 		}	
-		//physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
-		physicsBodyDefinition->position = gameObject->position - physicsBodyDefinition->position;
+		physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
+		//physicsBodyDefinition->position = gameObject->position - physicsBodyDefinition->position;
 		physicsBodyDefinition->angle = gameObject->rotation;
 	}
 };

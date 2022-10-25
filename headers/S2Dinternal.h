@@ -1218,8 +1218,8 @@ void UpdatePhysics(LevelInstance* inLevel)
 		s2derror(s.str().c_str());
 	}
 
-	float ts = 1.0f / 13.0f;
-	L->physicsWorld->Step(ts, 20, 20);
+	float ts = 1.0f / 60.0f;
+	L->physicsWorld->Step(ts, 50, 50);
 }
 
 void UpdateEngine(int steps = 1)
