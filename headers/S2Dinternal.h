@@ -1218,8 +1218,9 @@ void UpdatePhysics(LevelInstance* inLevel)
 		s2derror(s.str().c_str());
 	}
 
-	float ts = 1.0f / 60.0f;
-	L->physicsWorld->Step(ts, 50, 50);
+	
+	//float ts = 1.0f / 60.0f;
+	L->physicsWorld->Step(time::delta, 2, 2);
 }
 
 void UpdateEngine(int steps = 1)

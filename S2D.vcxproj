@@ -96,7 +96,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\sakbo\source\repos\Renniren\S2D\libaries\debug;C:\Users\pez\source\repos\Renniren\S2D\libaries\debug;C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\source\repos\Renniren\S2D\libaries\SFML;C:\Users\sakbo\source\repos\Renniren\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-graphics-s-d.lib	;sfml-window-s-d.lib	;sfml-audio-s-d.lib	;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-graphics-s-d.lib	;sfml-window-s-d.lib	;sfml-audio-s-d.lib	;imguid.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,7 +116,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\sakbo\source\repos\Renniren\S2D\libaries\release;C:\Users\pez\source\repos\Renniren\S2D\libaries\SFML;C:\Users\pez\source\repos\Renniren\S2D\libaries;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries\SFML;C:\Users\sakbo\Desktop\stuff\C++ fuckery\S2D\libaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-window-s.lib;sfml-system-s.lib;imgui.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfml-graphics-s.lib	;sfml-window-s.lib	;sfml-audio-s.lib	;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -169,7 +169,7 @@ public:
 				groundBodyDef.position = gameObject->position;
 				b2Body* groundBody = ParentLevel->physicsWorld->CreateBody(&groundBodyDef);
 				b2PolygonShape groundBox;
-				groundBox.SetAsBox(50.0f, 10.0f);
+				groundBox.SetAsBox(gameObject->scale.x, gameObject->scale.y);
 				groundBody->CreateFixture(&groundBox, 1.0f);
 			}
 
@@ -323,9 +323,9 @@ public:
 			//cout << time::Scale << endl;
 		}
 
-		if (isKeyPressedTap(Keyboard::Y))
+		if (Keyboard::isKeyPressed(Keyboard::Y))
 		{
-
+			s2dPrintVector2(position);
 		}
 	}
 };
