@@ -1275,6 +1275,8 @@ void InitializeEngine()
 	{
 		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->level->world_settings.name);
 	}
+
+	ImGui::SFML::Init(*window, true);
 }
 
 template<typename T>

@@ -50,6 +50,37 @@ bool SaveLevel()
 	return false;
 }
 
+void DoDebug()
+{
+	using namespace std;
+	static float f = 0, total = 0;
+	f += time::delta;
+	total += time::delta;
+	if (f >= 3)
+	{
+		cout << time::delta << endl;
+		cout << total << endl;
+		cout << "3 seconds have passed" << endl;
+		f = 0;
+	}
+
+	RunDestroyTest();
+
+	static bool st = false;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::I))
+	{
+		if (!st)
+		{
+			UpdateEngine(60); // Simulate 60 frames of gameplay at once.
+			st = true;
+		}
+	}
+	else
+	{
+		st = false;
+	}
+}
+
 int main()
 {
 	using namespace std;
@@ -74,65 +105,21 @@ int main()
 	rb->isStatic = true;
 	rb->UpdateRigidbody();
 
-	float f = 0, total = 0;
-
-	//Vector2 e, g, d, a, c, b;
-	//e = Vector2(-1.5, 0.5f);
-	//g = Vector2(0, -1);
-
-	//d = Vector2(-3, 3);
-	//a = Vector2(-3, -2);
-	//c = Vector2(3, -2);
-	//b = Vector2(1, 3);
-
-	//cout << e.Distance(b) << endl;
-	//cout << e.Distance(a) << endl;
-	//cout << e.Distance(d) << endl;
-	//
-	//cout << g.Distance(b) << endl;
-	//cout << g.Distance(a) << endl;
-	//cout << g.Distance(c) << endl;
-	
 	BehaviorInheritanceTest* bh = AddComponent<BehaviorInheritanceTest>(cam);
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
-	bool st = false;
+	
 	printf("init");
 	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
 		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
 		{ 
+			ImGui::SFML::ProcessEvent(*S2DRuntime::Instance->GAME_WINDOW, event);
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
-			//if (event.type == sf::Event::Resized) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
 
-		f += time::delta;
-		total += time::delta;
-		if (f >= 3)
-		{
-			cout << time::delta << endl;
-			cout << total << endl;
-			cout << "3 seconds have passed" << endl;
-			f = 0;
-		}
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::I))
-		{
-			if (!st)
-			{
-				UpdateEngine(60); // Simulate 60 frames of gameplay at once.
-				st = true;
-			}
-		}
-		else
-		{
-			st = false;
-		}
-
-		RunDestroyTest();
 		S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->level->world_settings.clear_color);
-		
+		DoDebug();
 		UpdateEngine();
-		
 		S2DRuntime::Instance->GAME_WINDOW->display();
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
