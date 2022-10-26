@@ -113,7 +113,7 @@ int main()
 	{
 		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
 		{ 
-			ImGui::SFML::ProcessEvent(*S2DRuntime::Instance->GAME_WINDOW, event);
+			//ImGui::SFML::ProcessEvent(*S2DRuntime::Instance->GAME_WINDOW, event);
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
 

@@ -1276,7 +1276,7 @@ void InitializeEngine()
 		S2DRuntime::Instance->GAME_WINDOW->setTitle(game_debug_name + LevelManager::ActiveLevel->level->world_settings.name);
 	}
 
-	ImGui::SFML::Init(*window, true);
+	//ImGui::SFML::Init(*window, true);
 }
 
 template<typename T>
@@ -1316,7 +1316,7 @@ T* GetComponent(GameObject* on)
 }
 
 float			time::Scale						= 1;
-float			time::delta						= 0,
+float			time::delta							= 0,
 				time::physicsDelta				= 0.02f,
 				time::deltaUnscaled		= 0;
 sf::Int64	time::current			= 0,
