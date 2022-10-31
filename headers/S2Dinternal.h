@@ -8,6 +8,7 @@
 #include <iostream>
 #include <random>
 #include<functional>
+#include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <sstream>
 
@@ -40,10 +41,12 @@ std::string game_debug_name = "S2D Test Game (Debug): ";
 
 #define REGISTER_CLASS static void RegisterClass
 #define Instantiate(x) new x()
+
 #define init_gameobject \
 ActiveObjects.push_back(new GameObject::GameObjectInstance(this));
 #define init_updatable UpdatableObjects.push_back(this)
 #define init_behavior ActiveBehaviors.push_back(new Behavior::BehaviorInstance(this))
+
 #define debug_log(x)\
 std::cout << x << std::endl
 #define INITALIZE_COMPONENT Initialize
@@ -54,7 +57,26 @@ std::cout << x << std::endl
 #define S2D_RELEASE 0
 #define IS_DEBUG (S2DRuntime::get()->release_mode == S2D_DEBUG)
 
+
+
 #endif
+
+#ifndef _WIN32
+#include<unistd.h>
+#else
+#include <direct.h>
+#endif
+
+std::string GetWorkingDirectory()
+{
+	char buffer[512];
+#ifdef _WIN32
+	_getcwd(buffer, 512);
+#else
+	getcwd(buffer, 512);
+#endif
+	return std::string(buffer);
+}
 
 double dist(sf::Vector2f a, sf::Vector2f b)
 {
@@ -98,7 +120,6 @@ void s2dlog(void* txt, bool newline = true)
 	cout << *&txt;
 	if (newline) cout << endl;
 }
-
 
 void clamp(float& num, float&& lower, float&& upper)
 {
@@ -189,6 +210,16 @@ public:
 		r.y *= n;
 		return r;
 	}
+
+	inline Vector2 operator + (Vector2 n)
+	{
+		Vector2 r = Vector2(this->x, this->y);
+		r.x += n.x;
+		r.y += n.y;
+		return r;
+	}
+
+
 
 	inline Vector2 operator = (Vector2 n)
 	{
@@ -281,37 +312,18 @@ void s2dPrintVector2(Vector2 v)
 	printf("\n(%4.2f %4.2f)", v.x, v.y);
 }
 
-struct S2DTextureSpritePair
+struct TextureReference
 {
 public:
 	int id;
 	sf::Texture* tex;
-	sf::Sprite* sprite;
+	sf::RectangleShape* sprite;
 
-	S2DTextureSpritePair(int n, sf::Texture* t, sf::Sprite* s)
+	TextureReference(int n, sf::Texture* t, sf::RectangleShape* s)
 	{
 		this->id = n;
 		this->tex = t;
 		this->sprite = s;
-	}
-};
-
-struct GameObjectSprite
-{
-public:
-	int tsp_id;
-	sf::Sprite s;
-
-	GameObjectSprite()
-	{
-		tsp_id = -1;
-		s = sf::Sprite();
-	}
-
-	GameObjectSprite(int tsp_id, sf::Sprite s)
-	{
-		this->tsp_id = tsp_id;
-		this->s = s;
 	}
 };
 
@@ -383,6 +395,11 @@ public:
 		this->name = name;
 		this->world_settings = settings;
 	}
+
+	void Serialize()
+	{
+		//sf::
+	}
 };
 
 class LevelInstance
@@ -413,6 +430,38 @@ public:
 		}
 
 		return Instance;
+	}
+};
+
+struct GameObjectSprite
+{
+public:
+	int id;
+	const sf::Texture* texture;
+	sf::RectangleShape* sprite;
+
+	GameObjectSprite()
+	{
+		id = -1;
+		texture = new sf::Texture();
+	}
+
+	GameObjectSprite(int id, sf::RectangleShape* s)
+	{
+		this->id = id;
+		this->sprite = s;
+		this->texture = sprite->getTexture();
+	}
+
+	void Draw(Vector2 position, float angle, Vector2 scale)
+	{
+		if (sprite != nullptr)
+		{
+			sprite->setScale(scale);
+			sprite->setRotation(angle);
+			sprite->setPosition(position);
+			S2DRuntime::get()->GAME_WINDOW->draw(*sprite);
+		}
 	}
 };
 
@@ -496,19 +545,19 @@ public:
 class TextureManager
 {
 public:
-	static std::vector<S2DTextureSpritePair> LoadedTextures;
+	static std::vector<TextureReference> LoadedTextures;
 	const static int null_id = -1;
 
-	static S2DTextureSpritePair CreateTexturePair(sf::Texture* tex, sf::Sprite* spr)
+	static TextureReference CreateTexturePair(sf::Texture* tex, sf::RectangleShape* spr)
 	{
-		S2DTextureSpritePair tsp = S2DTextureSpritePair(LoadedTextures.size(), tex, spr);
+		TextureReference tsp = TextureReference(LoadedTextures.size(), tex, spr);
 		LoadedTextures.push_back(tsp);
 		return tsp;
 	}
 
 	static void RegenerateLoadedTextureList()
 	{
-		std::vector<S2DTextureSpritePair> new_list = std::vector<S2DTextureSpritePair>();
+		std::vector<TextureReference> new_list = std::vector<TextureReference>();
 		for (int i = 0; i < LoadedTextures.size(); i++)
 		{
 			if (&LoadedTextures[i] == nullptr) continue;
@@ -537,13 +586,22 @@ public:
 
 	static GameObjectSprite CreateSprite(std::string texturepath)
 	{
-		sf::Texture* texture = new sf::Texture();
+		/*sf::Texture* texture = new sf::Texture();
 		sf::Sprite* ret;
-		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, sf::Sprite());
+		
 		ret = new sf::Sprite(*texture);
 		S2DTextureSpritePair s = CreateTexturePair(texture, ret);
-		ret->setOrigin(0.25f, 0.25f);
-		return GameObjectSprite(s.id, *ret);
+		ret->setOrigin(0.25f, 02.5f);*/
+		//ret->setScale(Vector2(scaleX, scaleY));
+
+
+		sf::Texture* texture = new sf::Texture();
+		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, nullptr);
+		sf::RectangleShape* spriteRect = new sf::RectangleShape(Vector2(1000, 1000));
+		spriteRect->setTexture(texture, false);
+
+		TextureReference s = CreateTexturePair(texture, spriteRect);
+		return GameObjectSprite(s.id, spriteRect);
 	}
 };
 
@@ -552,6 +610,7 @@ class GameObject
 public:
 	SimulationMode flags = SimulateOnlyWhenLevelActive;
 	Vector2 position, scale;
+	Vector2 deltaPosition, deltaScale;
 	LevelInstance* parent_level;
 	GameObjectSprite sprite;
 	std::string name;
@@ -571,7 +630,7 @@ public:
 	Vector2							velocity;
 	
 	int id = 0, group = UNGROUPED;
-	float rotation;
+	float rotation, deltaRotation;
 	float angularVelocity;
 	
 	struct GameObjectInstance
@@ -724,7 +783,7 @@ public:
 		active = false;
 		//aau_active = false;
 		
-		TextureManager::CleanUpTexturePair(sprite.tsp_id);
+		TextureManager::CleanUpTexturePair(sprite.id);
 		delete this;
 	}
 
@@ -741,10 +800,7 @@ public:
 	void draw(bool forceDraw = false)
 	{
 		if (drawMode == DontDraw && !forceDraw) return;
-		sprite.s.setPosition(position);
-		sprite.s.setRotation(rotation);
-		sprite.s.setScale(scale);
-		S2DRuntime::get()->GAME_WINDOW->draw(sprite.s);
+		sprite.Draw(position + deltaPosition, rotation + deltaRotation, scale + deltaScale);
 	}
 
 	void tick()
@@ -773,7 +829,7 @@ public:
 		switch (drawMode)
 		{
 		case DrawMode::DrawAlways:
-			if (&sprite.s != nullptr)
+			if (&sprite.texture != nullptr)
 			{
 				draw();
 			}
@@ -782,7 +838,7 @@ public:
 		case DrawMode::DrawWhenLevelActive:
 			if (parent_level->level->name == LevelManager::ActiveLevel->level->name)
 			{
-				if (&sprite.s != nullptr)
+				if (&sprite.texture != nullptr)
 				{
 					draw();
 				}
@@ -1336,7 +1392,7 @@ Vector2 Vector2::zero = Vector2(0, 0);
 S2DRuntime* S2DRuntime::Instance = nullptr;
 
 MStaticDefinition(std::vector<GameObject::DestroyRequest*>, GameObject, DestroyRequests);
-MStaticDefinition(std::vector<S2DTextureSpritePair>, TextureManager, LoadedTextures);
+MStaticDefinition(std::vector<TextureReference>, TextureManager, LoadedTextures);
 MStaticDefinition(std::vector<Behavior::BehaviorInstance*>, Behavior, ActiveBehaviors);
 MStaticDefinition(std::vector<Behavior::DestroyRequest>, Behavior, DestroyRequests);
 

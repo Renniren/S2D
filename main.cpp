@@ -87,6 +87,7 @@ int main()
 	srand(time(NULL));
 	InitializeEngine();
 	
+	cout << GetWorkingDirectory() << endl;
 	Camera* cam = new Camera();
 	cam->isMain = true;
 	TestPlayer* test = Instantiate(TestPlayer);
@@ -97,9 +98,9 @@ int main()
 	
 	GameObject* floor = new GameObject();
 	floor->MakeStandalone();
-	floor->sprite = TextureManager::CreateSprite("\\sprites\\square.png");
-	floor->position = Vector2(0, 50);
-	floor->scale = Vector2(100, 25);
+	floor->sprite = TextureManager::CreateSprite("resources\\sprites\\squareSmall.png");
+	floor->position = Vector2(-20, 40);
+	floor->scale = Vector2(0.1f, 0.1f);
 
 	Rigidbody* rb = AddComponent<Rigidbody>(floor);
 	rb->isStatic = true;
@@ -116,7 +117,7 @@ int main()
 			//ImGui::SFML::ProcessEvent(*S2DRuntime::Instance->GAME_WINDOW, event);
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
-
+		//floor->sprite = TextureManager::CreateSprite("\\sprites\\square.png");
 		S2DRuntime::Instance->GAME_WINDOW->clear(LevelManager::ActiveLevel->level->world_settings.clear_color);
 		DoDebug();
 		UpdateEngine();

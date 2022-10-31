@@ -68,7 +68,7 @@ public:
 		hasPhysics = true;
 		position = sf::Vector2f(1, 4);
 		scale = sf::Vector2f(0.03, 0.03);
-		sprite = TextureManager::CreateSprite("sprites\\circle.png");
+		sprite = TextureManager::CreateSprite("resources\\sprites\\circle.png");
 	}
 
 	void update()
@@ -136,18 +136,22 @@ public:
 		physicsBody->SetLinearDamping(drag);
 		physicsBody->SetAngularDamping(angularDrag);
 
-		debug_circle = new sf::CircleShape(4);
+		debug_circle = new sf::CircleShape(gameObject->scale.x);
 		debug_circle->setFillColor(sf::Color(0, 255, 0, 100));
 
+		
 		debug_square = new sf::RectangleShape(Vector2(gameObject->scale.x, gameObject->scale.y));
 		debug_square->setFillColor(sf::Color(0, 255, 0, 100));
+		debug_square->setOutlineColor(sf::Color(255, 0, 0, 190));
+		debug_square->setOutlineThickness(2);
+
 	}
 
 
 	void DrawDebugShapes()
 	{
 		debug_circle->setPosition((Vector2)physicsBodyDefinition->position);
-		debug_square->setPosition((Vector2)physicsBodyDefinition->position);
+		debug_square->setPosition((Vector2)physicsBody->GetWorldCenter());
 		S2DRuntime::get()->GAME_WINDOW->draw(*debug_circle);
 		S2DRuntime::get()->GAME_WINDOW->draw(*debug_square);
 	}
@@ -227,7 +231,7 @@ public:
 	void PreUpdate()
 	{
 		UpdateRigidbody();
-		DrawDebugShapes();
+		
 		if (!isStatic)
 		{
 			float ts = ((time::delta * 10) * time::Scale);
@@ -239,9 +243,15 @@ public:
 			//physicsBody->SetLinearVelocity(gameObject->position - physicsBodyDefinition->position);
 			
 		}	
+		physicsBody->SetTransform(gameObject->position, gameObject->rotation);
 		physicsBodyDefinition->position.Set(gameObject->position.x, gameObject->position.y);
 		//physicsBodyDefinition->position = gameObject->position - physicsBodyDefinition->position;
 		physicsBodyDefinition->angle = gameObject->rotation;
+	}
+
+	void LateUpdate()
+	{
+		DrawDebugShapes();
 	}
 };
 
@@ -254,10 +264,12 @@ public:
 	TestPlayer() : GameObject(true)
 	{
 		init_gameobject
-			scale = sf::Vector2f(0.03, 0.03);
-		sprite = TextureManager::CreateSprite("sprites\\square.png");
-		body = AddComponent<Rigidbody>(this);
-		body->gravityInfluence = 0;
+		scale = sf::Vector2f(0.03, 0.03);
+		sprite = TextureManager::CreateSprite("resources\\sprites\\square.png");
+		
+		//body = AddComponent<Rigidbody>(this);
+		//body->gravityInfluence = 0;
+		
 		//body->MakeStatic();
 	}
 
@@ -304,7 +316,6 @@ public:
 			printf("test");
 			RequestDestroy();
 		}
-
 
 		float incr = 2.0f;
 		if (Keyboard::isKeyPressed(Keyboard::R))
@@ -375,7 +386,7 @@ public:
 	ParticleSystem() : GameObject(true)
 	{
 		init_gameobject;
-		sprite = TextureManager::CreateSprite("sprites\\square.png");
+		sprite = TextureManager::CreateSprite("resources\\sprites\\square.png");
 		maxParticles = 34;
 	}
 

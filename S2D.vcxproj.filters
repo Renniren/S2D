@@ -329,6 +329,9 @@
     <ClInclude Include="headers\S2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="headers\S2Ddata.h">
+      <Filter>Header Files\SFML</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="headers\SFML\Audio\SoundFileFactory.inl">
