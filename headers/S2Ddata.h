@@ -2,11 +2,18 @@
 #ifndef S2D_DATA_HEADER
 #define S2D_DATA_HEADER
 #include <S2Dcomponents.h>
+#include <fstream>
 
 #ifndef S2D_DATA_MACROS
 #define S2D_DATA_MACROS
 
 #endif
+
+struct Environment
+{
+	std::vector<std::string> activeTypes;
+
+};
 
 class LevelSerializer
 {
@@ -27,9 +34,10 @@ public:
 	std::string SerializeLevel(Level* lvl)
 	{
 		using namespace std;
+		fstream str;
 		string result = "";
 		result.append(FILE_BEGIN);
-
+		
 		result.append(FILE_END);
 	}
 
