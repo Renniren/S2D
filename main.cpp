@@ -81,6 +81,10 @@ void DoDebug()
 	}
 }
 
+//Implement some way of building a pipe to the C# side of the engine that'd handle data serialization.
+//https://stackoverflow.com/questions/11196379/send-data-to-another-c-program
+//https://stackoverflow.com/questions/1906561/communication-between-c-and-c-sharp-through-pipe
+
 int main()
 {
 	using namespace std;
