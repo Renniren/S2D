@@ -11,6 +11,7 @@
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <sstream>
+#include <fstream>
 
 #ifndef GUARD_S2D_DEFINES
 #define GUARD_S2D_DEFINES
@@ -69,13 +70,15 @@ std::cout << x << std::endl
 
 std::string GetWorkingDirectory()
 {
-	char buffer[512];
+	char buffer[2048];
 #ifdef _WIN32
-	_getcwd(buffer, 512);
+	_getcwd(buffer, 2048);
 #else
 	getcwd(buffer, 512);
 #endif
-	return std::string(buffer);
+	std::string s = std::string(buffer);
+	s += "\\";
+	return s;
 }
 
 double dist(sf::Vector2f a, sf::Vector2f b)
@@ -121,6 +124,15 @@ void s2dlog(void* txt, bool newline = true)
 	if (newline) cout << endl;
 }
 
+void s2dlog(std::string txt, bool newline = true)
+{
+	using namespace std;
+	cout << txt;
+	if (newline) cout << endl;
+}
+
+
+
 void clamp(float& num, float&& lower, float&& upper)
 {
 	if (num < lower) num = lower;
@@ -137,6 +149,13 @@ float s2random(float Min, float Max)
 {
 	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
 }
+
+int s2random(int Min, int Max)
+{
+	return ((float(rand()) / float(INT_MAX)) * (Max - Min)) + Min;
+}
+
+
 
 enum SimulationMode { SimulateOnlyWhenLevelActive, SimulateAlways };
 
@@ -317,13 +336,15 @@ struct TextureReference
 public:
 	int id;
 	sf::Texture* tex;
+	std::string path;
 	sf::RectangleShape* sprite;
 
-	TextureReference(int n, sf::Texture* t, sf::RectangleShape* s)
+	TextureReference(int n, sf::Texture* t, sf::RectangleShape* s, std::string path = "")
 	{
 		this->id = n;
 		this->tex = t;
 		this->sprite = s;
+		this->path = path;
 	}
 };
 
@@ -402,6 +423,50 @@ public:
 	}
 };
 
+class Pipe
+{
+public:
+#define cstr const char*
+	std::string name;
+	std::ofstream* file;
+	std::string path;
+	std::string filename;
+	static std::string ext;
+
+	Pipe(std::string name)
+	{
+		using namespace std;
+		
+		path = GetWorkingDirectory(); 
+		filename = path + name + ext;
+		string str = "";
+		ofstream* file = new ofstream(filename.c_str());
+		this->file = file;
+		file->open(str, 2, 62);
+
+		this->name = name;
+	}
+
+	void Destroy()
+	{
+		const int result = remove(filename.c_str());
+		if (result == 0) {
+			printf("success\n");
+		}
+		else {
+			//printf("%s\n", strerror_s(errno))p; // No such file or directory
+		}
+	}
+
+	~Pipe()
+	{
+		Destroy();
+	}
+#undef cstr
+};
+
+MStaticDefinition(std::string, Pipe, ext);
+
 class LevelInstance
 {
 public:
@@ -437,8 +502,10 @@ struct GameObjectSprite
 {
 public:
 	int id;
+	std::string path;
 	const sf::Texture* texture;
 	sf::RectangleShape* sprite;
+	
 
 	GameObjectSprite()
 	{
@@ -446,11 +513,12 @@ public:
 		texture = new sf::Texture();
 	}
 
-	GameObjectSprite(int id, sf::RectangleShape* s)
+	GameObjectSprite(int id, sf::RectangleShape* s, std::string path)
 	{
 		this->id = id;
 		this->sprite = s;
 		this->texture = sprite->getTexture();
+		this->path = path;
 	}
 
 	void Draw(Vector2 position, float angle, Vector2 scale)
@@ -596,24 +664,26 @@ public:
 
 
 		sf::Texture* texture = new sf::Texture();
-		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, nullptr);
+		if (!texture->loadFromFile(texturepath)) return GameObjectSprite(-1, nullptr, "");
 		sf::RectangleShape* spriteRect = new sf::RectangleShape(Vector2(1000, 1000));
 		spriteRect->setTexture(texture, false);
 
 		TextureReference s = CreateTexturePair(texture, spriteRect);
-		return GameObjectSprite(s.id, spriteRect);
+		return GameObjectSprite(s.id, spriteRect, texturepath);
 	}
 };
 
 class GameObject 
 {
 public:
+	std::string name;
 	SimulationMode flags = SimulateOnlyWhenLevelActive;
 	Vector2 position, scale;
 	Vector2 deltaPosition, deltaScale;
 	LevelInstance* parent_level;
 	GameObjectSprite sprite;
-	std::string name;
+
+	std::vector<std::string> components = std::vector<std::string>();
 	
 	float mass					= 1;
 	float drag					= 0;
@@ -1346,7 +1416,12 @@ T* AddComponent(GameObject* to)
 		ss << " Tried to add a component to a null GameObject.";
 		s2derror(ss.str().c_str());
 	}
+
+	std::stringstream ss;
+	ss << typeid(c).name();
+	ss << s2random(0, INT_MAX);
 	c->gameObject = to->instance->obj;
+	to->instance->obj->components.push_back(ss.str());
 	c->INITALIZE_COMPONENT(c);
 	c->bStart();
 	return c;

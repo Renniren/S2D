@@ -1,0 +1,663 @@
+FILE:
+
+OBJ
+{	
+	id: 1994242178	
+	spritepath: none	
+	name: new Camera	
+	position: (0, 0)	
+	delta_position: (0, 0)	
+	scale: (0, 0)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1737855132	
+	spritepath: resources\sprites\square.png	
+	name: player	
+	position: (152.4, -111.999)	
+	delta_position: (152.4, -111.999)	
+	scale: (0.03, 0.03)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 52997937	
+	spritepath: resources\sprites\circle.png	
+	name: new WorldObject	
+	position: (1, -600)	
+	delta_position: (1, -600)	
+	scale: (0.03, 0.03)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 296240357	
+	spritepath: none	
+	name: new WorldObject	
+	position: (0, 0)	
+	delta_position: (0, 0)	
+	scale: (0, 0)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2110695032	
+	spritepath: resources\sprites\squareSmall.png	
+	name: new WorldObject	
+	position: (-20, 40)	
+	delta_position: (-20, 40)	
+	scale: (0.1, 0.1)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 608879182	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 4717.32)	
+	delta_position: (0, 4717.32)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 857272749	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 4527.18)	
+	delta_position: (0, 4527.18)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 569383260	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 4341.05)	
+	delta_position: (0, 4341.05)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 328177346	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 4158.86)	
+	delta_position: (0, 4158.86)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1465452596	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3980.58)	
+	delta_position: (0, 3980.58)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 992723306	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3806.24)	
+	delta_position: (0, 3806.24)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2144646157	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3635.81)	
+	delta_position: (0, 3635.81)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 788392185	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3469.31)	
+	delta_position: (0, 3469.31)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1963770946	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3306.73)	
+	delta_position: (0, 3306.73)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 753278705	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 3148.07)	
+	delta_position: (0, 3148.07)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2125722691	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2993.35)	
+	delta_position: (0, 2993.35)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 509876691	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2842.55)	
+	delta_position: (0, 2842.55)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1571359735	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2695.68)	
+	delta_position: (0, 2695.68)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2026601901	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2552.73)	
+	delta_position: (0, 2552.73)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2141107883	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2413.7)	
+	delta_position: (0, 2413.7)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1194316738	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2278.6)	
+	delta_position: (0, 2278.6)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2073978768	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2147.44)	
+	delta_position: (0, 2147.44)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1299520833	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 2020.19)	
+	delta_position: (0, 2020.19)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1555923034	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1896.86)	
+	delta_position: (0, 1896.86)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1567366043	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1777.46)	
+	delta_position: (0, 1777.46)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1505745580	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1661.99)	
+	delta_position: (0, 1661.99)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1822359887	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1550.44)	
+	delta_position: (0, 1550.44)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 95825783	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1442.81)	
+	delta_position: (0, 1442.81)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 305949116	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1339.1)	
+	delta_position: (0, 1339.1)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1762287089	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1239.32)	
+	delta_position: (0, 1239.32)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1763844820	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1143.46)	
+	delta_position: (0, 1143.46)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1788754890	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 1051.53)	
+	delta_position: (0, 1051.53)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1148364343	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 963.089)	
+	delta_position: (0, 963.089)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 593897490	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 879.024)	
+	delta_position: (0, 879.024)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1763510847	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 798.492)	
+	delta_position: (0, 798.492)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 470319434	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 722.294)	
+	delta_position: (0, 722.294)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 2063809993	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 649.314)	
+	delta_position: (0, 649.314)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1937944932	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 581)	
+	delta_position: (0, 581)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1495492405	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 516.609)	
+	delta_position: (0, 516.609)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1799444582	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 455.851)	
+	delta_position: (0, 455.851)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 712500038	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 399.33)	
+	delta_position: (0, 399.33)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 283185330	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 346.731)	
+	delta_position: (0, 346.731)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1516978373	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 297.823)	
+	delta_position: (0, 297.823)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 634342439	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 253.093)	
+	delta_position: (0, 253.093)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 674866099	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 212.286)	
+	delta_position: (0, 212.286)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1999973709	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 175.403)	
+	delta_position: (0, 175.403)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 717880932	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 142.443)	
+	delta_position: (0, 142.443)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 396379063	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 113.408)	
+	delta_position: (0, 113.408)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1587347371	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 85.84)	
+	delta_position: (0, 85.84)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1993705316	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 61.8744)	
+	delta_position: (0, 61.8744)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1174894477	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 41.9598)	
+	delta_position: (0, 41.9598)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1113989180	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 25.9686)	
+	delta_position: (0, 25.9686)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 624887931	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 13.9025)	
+	delta_position: (0, 13.9025)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 1369400328	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 5.72933)	
+	delta_position: (0, 5.72933)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+OBJ
+{	
+	id: 892782003	
+	spritepath: resources\sprites\square.png	
+	name: Particle	
+	position: (0, 0)	
+	delta_position: (0, 0)	
+	scale: (0.02, 0.02)	
+	rotation: 0	
+	active: true
+}
+
+END

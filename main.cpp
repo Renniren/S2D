@@ -1,6 +1,10 @@
 #include "S2D.h"
 #include <time.h>       /* time */
 #include<process.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <io.h>
 
 sf::Event event;
 
@@ -11,6 +15,8 @@ void RunDestroyTest()
 	
 	static vector<TestPlayer*> plys = vector<TestPlayer*>();
 	static bool d = false;
+
+
 	
 	if (isKeyPressedTap(Keyboard::P))
 	{
@@ -91,6 +97,14 @@ int main()
 	srand(time(NULL));
 	InitializeEngine();
 	
+	stringstream ss;
+	ss << GetWorkingDirectory().c_str();
+	ss << "\\bin\\serializer.exe";
+
+	const char* p = ss.str().c_str();
+
+	//system(ss.str().c_str());
+
 	cout << GetWorkingDirectory() << endl;
 	Camera* cam = new Camera();
 	cam->isMain = true;
@@ -99,6 +113,7 @@ int main()
 	UpdatableTest* test3 = Instantiate(UpdatableTest);
 	ParticleSystem* ps = Instantiate(ParticleSystem);
 	ps->emitting = true;
+	
 	
 	GameObject* floor = new GameObject();
 	floor->MakeStandalone();
@@ -114,10 +129,10 @@ int main()
 	GetComponent<BehaviorInheritanceTest>(cam)->GetComponentWorksCheck();
 	
 	printf("init");
-	while(S2DRuntime::Instance->GAME_WINDOW->isOpen())
+	while (S2DRuntime::Instance->GAME_WINDOW->isOpen())
 	{
 		while (S2DRuntime::Instance->GAME_WINDOW->pollEvent(event))
-		{ 
+		{
 			//ImGui::SFML::ProcessEvent(*S2DRuntime::Instance->GAME_WINDOW, event);
 			if (event.type == sf::Event::Closed) S2DRuntime::Instance->GAME_WINDOW->close();
 		}
@@ -129,5 +144,8 @@ int main()
 		if (TOO_MANY_TEXTURES) TextureManager::RegenerateLoadedTextureList();
 	}
 
+	LevelSerializer().SerializeLevel();
+
+	system("pause");
 	return 0;
 }

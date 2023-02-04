@@ -266,7 +266,7 @@ public:
 		init_gameobject
 		scale = sf::Vector2f(0.03, 0.03);
 		sprite = TextureManager::CreateSprite("resources\\sprites\\square.png");
-		
+		name = "player";
 		//body = AddComponent<Rigidbody>(this);
 		//body->gravityInfluence = 0;
 		
